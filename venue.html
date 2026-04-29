@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Host City — FIFA World Cup 2026™</title>
+  <meta name="description" content="Explore hospitality packages for FIFA World Cup 2026™ host cities." />
+  <link rel="icon" href="assets/logo-fifa.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="venue-page">
+
+  <!-- ================= Navbar ================= -->
+  <header class="nav" id="top">
+    <div class="nav__inner">
+      <a href="index.html#top" class="nav__logo" aria-label="FIFA World Cup 2026 Official Hospitality Home">
+        <img src="assets/logo-fifa-ol.webp" alt="FIFA World Cup 2026 Official Hospitality" class="nav__logo-img" />
+      </a>
+
+      <nav class="nav__menu" aria-label="Primary">
+        <ul>
+          <li><a class="nav__link" href="index.html#matches">Single Matches</a></li>
+          <li class="has-dropdown">
+            <button class="nav__link">Match Offerings <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+            <ul class="nav__sub">
+              <li><a href="index.html#match-offerings">Single Matches</a></li>
+              <li><a href="index.html#match-offerings">Venue Series</a></li>
+              <li><a href="index.html#match-offerings">Follow My Team</a></li>
+              <li><a href="index.html#private-suites">Private Suites</a></li>
+              <li><a href="index.html#match-offerings">Multi-Match Series</a></li>
+            </ul>
+          </li>
+          <li><a class="nav__link" href="index.html#why">About</a></li>
+          <li><a class="nav__link" href="index.html#faq">FAQ</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav__right">
+        <div class="lang-switcher">
+          <button class="lang-switcher__btn">English <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+          <ul class="lang-switcher__list">
+            <li><a href="#" aria-current="true">English</a></li>
+            <li><a href="#">Français</a></li>
+            <li><a href="#">Español</a></li>
+          </ul>
+        </div>
+        <button class="nav__toggle" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= Venue Hero ================= -->
+  <section class="venue-hero">
+    <div class="venue-hero__inner container">
+      <div class="venue-hero__copy">
+        <p class="venue-hero__overline">YOUR JOURNEY TO FIFA WORLD CUP 2026<sup>™</sup> STARTS HERE</p>
+        <h1 class="venue-hero__title" id="venueName">—</h1>
+        <p class="venue-hero__lede" id="venueDescription">Loading venue information…</p>
+        <div class="venue-hero__cta">
+          <a class="btn btn--primary" href="#venue-matches" id="venueMatchesCta">Matches</a>
+          <a class="btn btn--link" href="index.html#match-offerings">Venue Series <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <figure class="venue-hero__img">
+        <img id="venueImage" src="assets/hero-stadium.webp" alt="" />
+      </figure>
+    </div>
+    <div class="venue-hero__curve" aria-hidden="true"></div>
+  </section>
+
+  <!-- ================= Select Single Matches (cards) ================= -->
+  <section class="section venue-matches" id="venue-matches">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="h-display light">Select Single Match</h2>
+        <p class="section__sub light" id="venueMatchCount">Explore matches in this host city.</p>
+      </div>
+      <div class="match-grid" id="venueMatchGrid"></div>
+    </div>
+  </section>
+
+  <!-- ================= Browse Matches (schedule list) ================= -->
+  <section class="section venue-schedule" id="venue-schedule">
+    <div class="container">
+      <div class="venue-schedule__head">
+        <h2 class="h-display">Browse Matches</h2>
+        <div class="venue-schedule__steps" aria-hidden="true">
+          <span><em>1.</em> Choose Offerings</span>
+          <span><em>2.</em> Choose Hospitality</span>
+          <span><em>3.</em> Configure &amp; Check Out</span>
+        </div>
+      </div>
+
+      <div class="venue-schedule__filters">
+        <button class="vs-filter"><span>Location</span><svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+        <button class="vs-filter"><span>Team</span><svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+        <button class="vs-filter"><span>Stage</span><svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+        <button class="vs-filter"><span>Hospitality</span><svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+        <button class="vs-filter"><span>Group</span><svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+        <button class="vs-filter"><span>Date Range</span><svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+
+        <div class="venue-schedule__toggle">
+          <label class="vs-toggle"><input type="checkbox" id="hideUnavailable"/><span>Hide Unavailable</span></label>
+          <button class="vs-sort">Sorted by Date <span aria-hidden="true">↑</span></button>
+        </div>
+      </div>
+
+      <ol class="schedule-list" id="scheduleList"></ol>
+
+      <div class="venue-matches__more">
+        <a class="btn btn--ghost-dark" href="index.html#matches">Explore All Matches</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Other Venues ================= -->
+  <section class="section other-venues">
+    <div class="container">
+      <div class="section__head">
+        <p class="eyebrow">More Host Cities</p>
+        <h2 class="h-display">Explore other <br/>venues</h2>
+      </div>
+      <div class="other-venues__grid" id="otherVenuesGrid"></div>
+    </div>
+  </section>
+
+  <!-- ================= CTA Strip ================= -->
+  <section class="cta-strip">
+    <div class="container cta-strip__inner">
+      <div>
+        <p class="eyebrow eyebrow--gold">Not ready to make a purchase?</p>
+        <h3>Talk to an Official Sales Agent.</h3>
+      </div>
+      <div class="cta-strip__phones">
+        <a href="tel:+18446521685"><span>USA</span>+1-844-652-1685</a>
+        <a href="tel:+18885027844"><span>Canada</span>+1-888-502-7844</a>
+        <a href="tel:+52800283350"><span>Mexico</span>+52 80 0283 3520</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Footer ================= -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <img src="assets/logo-fifa-ol.webp" alt="FIFA World Cup 26 Official Hospitality" class="footer__logo" />
+        <p>On Location is the Official Hospitality Provider of the FIFA World Cup 26™.</p>
+        <div class="footer__partners">
+          <img src="assets/logo-onlocation.svg" alt="On Location" />
+          <img src="assets/logo-fifa.webp" alt="FIFA" />
+          <img src="assets/logo-visa.webp" alt="VISA" />
+        </div>
+      </div>
+      <div class="footer__cols">
+        <div>
+          <h5>Explore</h5>
+          <ul>
+            <li><a href="index.html#top">Home</a></li>
+            <li><a href="index.html#why">About Us</a></li>
+            <li><a href="index.html#matches">Matches</a></li>
+            <li><a href="index.html#browse">Venues</a></li>
+            <li><a href="index.html#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h5>Account</h5>
+          <ul>
+            <li><a href="#">My Account</a></li>
+            <li><a href="#">My Orders</a></li>
+            <li><a href="#">FIFA World Cup 26™ Sales Agents</a></li>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">Request Accessible Hospitality</a></li>
+          </ul>
+        </div>
+        <div>
+          <h5>Contact</h5>
+          <ul class="footer__phones">
+            <li><em>USA</em><a href="tel:+18446521685">+1-844-652-1685</a></li>
+            <li><em>Canada</em><a href="tel:+18885027844">+1-888-502-7844</a></li>
+            <li><em>Mexico</em><a href="tel:+52800283350">+52 80 0283 3520</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer__legal">
+      <div class="container footer__legal-inner">
+        <p>© 2025 On Location Events, LLC | All Rights Reserved</p>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">FIFA Ticket Terms of Use</a></li>
+          <li><a href="#">On Location Terms of Use</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="venue.js"></script>
+</body>
+</html>

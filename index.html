@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIFA World Cup 2026™ — Official Hospitality</title>
+  <meta name="description" content="Experience the best of it all with Official Hospitality packages for the FIFA World Cup 2026™ featuring premium tickets, food & beverage, entertainment, and more." />
+  <link rel="icon" href="assets/logo-fifa.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ================= Country selector overlay ================= -->
+  <div class="country-modal" id="countryModal" hidden>
+    <div class="country-modal__card">
+      <h2>Choose Country</h2>
+      <p>Please select the host country in which you're purchasing hospitality packages. The price will be in the respective country's currency.</p>
+      <div class="country-modal__grid">
+        <button class="country-tile" data-country="usa">
+          <img src="assets/flag-usa.webp" alt="USA" />
+          <span>United States</span>
+        </button>
+        <button class="country-tile" data-country="can">
+          <img src="assets/flag-canada.webp" alt="Canada" />
+          <span>Canada</span>
+        </button>
+        <button class="country-tile" data-country="mex">
+          <img src="assets/flag-mexico.webp" alt="Mexico" />
+          <span>Mexico</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Navbar ================= -->
+  <header class="nav" id="top">
+    <div class="nav__inner">
+      <a href="#top" class="nav__logo" aria-label="FIFA World Cup 2026 Official Hospitality Home">
+        <img src="assets/logo-fifa-ol.webp" alt="FIFA World Cup 2026 Official Hospitality" class="nav__logo-img" />
+      </a>
+
+      <nav class="nav__menu" aria-label="Primary">
+        <ul>
+          <li class="has-dropdown">
+            <button class="nav__link">Match Offerings <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+            <ul class="nav__sub">
+              <li><a href="#match-offerings">Single Matches</a></li>
+              <li><a href="#match-offerings">Venue Series</a></li>
+              <li><a href="#match-offerings">Follow My Team</a></li>
+              <li><a href="#private-suites">Private Suites</a></li>
+              <li><a href="#match-offerings">Multi-Match Series</a></li>
+            </ul>
+          </li>
+          <li class="has-dropdown">
+            <button class="nav__link">More <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+            <ul class="nav__sub">
+              <li><a href="#faq">FAQ</a></li>
+              <li><a href="#why">About</a></li>
+              <li><a href="#browse">Venues</a></li>
+              <li><a href="#browse">Schedule</a></li>
+            </ul>
+          </li>
+          <li><a class="nav__link" href="#faq">FAQ</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav__right">
+        <div class="country-switcher">
+          <button class="country-switcher__btn" id="countryBtn">
+            <img id="countryFlag" src="assets/flag-usa.webp" alt="USA" />
+            <span id="countryLabel">USA</span>
+            <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+        <div class="lang-switcher">
+          <button class="lang-switcher__btn">English <svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" fill="none" stroke-width="1.5"/></svg></button>
+          <ul class="lang-switcher__list">
+            <li><a href="#" aria-current="true">English</a></li>
+            <li><a href="#">Français</a></li>
+            <li><a href="#">Español</a></li>
+          </ul>
+        </div>
+        <a href="#account" class="btn btn--link">Log In / Sign Up</a>
+        <button class="nav__toggle" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= Hero ================= -->
+  <section class="hero">
+    <div class="hero__bg">
+      <img src="assets/hero-stadium.webp" alt="" class="hero__img" />
+      <div class="hero__grad"></div>
+    </div>
+    <div class="hero__inner">
+      <div class="hero__copy">
+        <p class="eyebrow">Official Hospitality · 11 June – 19 July 2026</p>
+        <p class="hero__overline">Get closer Than Ever To</p>
+        <h1 class="hero__title">FIFA World Cup 2026<sup>™</sup></h1>
+        <p class="hero__lede">
+          Experience the best of it all with official hospitality packages featuring
+          premium tickets, food &amp; beverage, entertainment, and more.
+          <strong>Now available: single matches and private suites!</strong>
+        </p>
+        <div class="hero__cta">
+          <a href="#browse" class="btn btn--primary">Browse Matches</a>
+          <a href="#private-suites" class="btn btn--secondary">Browse Suites</a>
+        </div>
+      </div>
+
+      <div class="countdown" aria-live="polite">
+        <div class="countdown__label">Kick-off in</div>
+        <div class="countdown__grid">
+          <div><strong id="cd-days">--</strong><span>Days</span></div>
+          <div><strong id="cd-hours">--</strong><span>Hours</span></div>
+          <div><strong id="cd-mins">--</strong><span>Minutes</span></div>
+          <div><strong id="cd-secs">--</strong><span>Seconds</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Browse by ================= -->
+  <section class="section browse" id="browse">
+    <div class="container">
+      <div class="browse__head">
+        <h2 class="h-display">Browse</h2>
+        <div class="tabs tabs--pill" role="tablist">
+          <button class="tab tab--active" data-browse="city" role="tab">Host City</button>
+          <button class="tab" data-browse="team" role="tab">Team</button>
+        </div>
+      </div>
+
+      <div class="browse__panel" data-panel="city">
+        <div class="city-row">
+          <h4>🇺🇸 USA</h4>
+          <div class="city-list">
+            <a href="venue.html?city=atlanta">Atlanta</a>
+            <a href="venue.html?city=boston">Boston</a>
+            <a href="venue.html?city=dallas">Dallas</a>
+            <a href="venue.html?city=houston">Houston</a>
+            <a href="venue.html?city=kansas-city">Kansas City</a>
+            <a href="venue.html?city=los-angeles">Los Angeles</a>
+            <a href="venue.html?city=miami">Miami</a>
+            <a href="venue.html?city=new-york-new-jersey">New York New Jersey</a>
+            <a href="venue.html?city=philadelphia">Philadelphia</a>
+            <a href="venue.html?city=san-francisco-bay-area">San Francisco Bay Area</a>
+            <a href="venue.html?city=seattle">Seattle</a>
+          </div>
+        </div>
+        <div class="city-row">
+          <h4>🇨🇦 Canada</h4>
+          <div class="city-list">
+            <a href="venue.html?city=toronto">Toronto</a>
+            <a href="venue.html?city=vancouver">Vancouver</a>
+          </div>
+        </div>
+        <div class="city-row">
+          <h4>🇲🇽 Mexico</h4>
+          <div class="city-list">
+            <a href="venue.html?city=guadalajara">Guadalajara</a>
+            <a href="venue.html?city=mexico-city">Mexico City</a>
+            <a href="venue.html?city=monterrey">Monterrey</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="browse__panel" data-panel="team" hidden>
+        <div class="team-grid">
+          <a class="team"><span>ARG</span>Argentina</a>
+          <a class="team"><span>AUS</span>Australia</a>
+          <a class="team"><span>AUT</span>Austria</a>
+          <a class="team"><span>BEL</span>Belgium</a>
+          <a class="team"><span>BRA</span>Brazil</a>
+          <a class="team"><span>CAN</span>Canada</a>
+          <a class="team"><span>COL</span>Colombia</a>
+          <a class="team"><span>CRO</span>Croatia</a>
+          <a class="team"><span>ECU</span>Ecuador</a>
+          <a class="team"><span>EGY</span>Egypt</a>
+          <a class="team"><span>ENG</span>England</a>
+          <a class="team"><span>FRA</span>France</a>
+          <a class="team"><span>GER</span>Germany</a>
+          <a class="team"><span>GHA</span>Ghana</a>
+          <a class="team"><span>IRN</span>Iran</a>
+          <a class="team"><span>JPN</span>Japan</a>
+          <a class="team"><span>JOR</span>Jordan</a>
+          <a class="team"><span>KOR</span>Korea Republic</a>
+          <a class="team"><span>MEX</span>Mexico</a>
+          <a class="team"><span>MAR</span>Morocco</a>
+          <a class="team"><span>NED</span>Netherlands</a>
+          <a class="team"><span>NZL</span>New Zealand</a>
+          <a class="team"><span>NOR</span>Norway</a>
+          <a class="team"><span>POR</span>Portugal</a>
+          <a class="team"><span>QAT</span>Qatar</a>
+          <a class="team"><span>KSA</span>Saudi Arabia</a>
+          <a class="team"><span>SCO</span>Scotland</a>
+          <a class="team"><span>SEN</span>Senegal</a>
+          <a class="team"><span>RSA</span>South Africa</a>
+          <a class="team"><span>ESP</span>Spain</a>
+          <a class="team"><span>SUI</span>Switzerland</a>
+          <a class="team"><span>TUN</span>Tunisia</a>
+          <a class="team"><span>TUR</span>Türkiye</a>
+          <a class="team"><span>URU</span>Uruguay</a>
+          <a class="team"><span>USA</span>United States</a>
+          <a class="team"><span>UZB</span>Uzbekistan</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Warning strip ================= -->
+  <section class="alert-strip">
+    <div class="container">
+      <p>Don't risk unofficial sources or leave tickets to chance!<br/>Every offering features premium seats and hospitality.</p>
+      <ol class="steps">
+        <li><span>1.</span> Choose Offerings</li>
+        <li><span>2.</span> Choose Hospitality</li>
+        <li><span>3.</span> Configure &amp; Check Out</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================= Match Offerings ================= -->
+  <section class="section offerings" id="match-offerings">
+    <div class="container">
+      <div class="section__head">
+        <p class="eyebrow eyebrow--light">Ways to Experience</p>
+        <h2 class="h-display">Match Offerings</h2>
+      </div>
+
+      <div class="offerings__grid">
+        <article class="offering offering--now">
+          <div class="offering__img">
+            <img src="assets/offering-a.webp" alt="Single match hospitality" />
+            <span class="tag tag--teal">Now Available</span>
+          </div>
+          <div class="offering__body">
+            <h3>Single Match</h3>
+            <p>Watch every match at the venue of your choice.</p>
+            <a class="btn btn--primary btn--sm" href="#matches">Buy Now</a>
+          </div>
+        </article>
+
+        <article class="offering">
+          <div class="offering__img">
+            <img src="assets/offering-b.webp" alt="Venue series hospitality" />
+          </div>
+          <div class="offering__body">
+            <h3>Venue Series</h3>
+            <p>See your team in action at every early-stage match, regardless of location.</p>
+            <a class="btn btn--ghost btn--sm" href="#">Details</a>
+          </div>
+        </article>
+
+        <article class="offering">
+          <div class="offering__img">
+            <img src="assets/offering-c.webp" alt="Follow my team" />
+          </div>
+          <div class="offering__body">
+            <h3>Follow My Team</h3>
+            <p>Follow your nation across the tournament — every match, every venue.</p>
+            <a class="btn btn--ghost btn--sm" href="#">Details</a>
+          </div>
+        </article>
+
+        <article class="offering">
+          <div class="offering__img">
+            <img src="assets/offering-d.webp" alt="Multi-match series" />
+          </div>
+          <div class="offering__body">
+            <h3>Multi-Match Series</h3>
+            <p>Your path to the Final Match! Choose a curated multi-stage series.</p>
+            <a class="btn btn--ghost btn--sm" href="#">Details</a>
+          </div>
+        </article>
+      </div>
+
+      <!-- Multi-match tiers -->
+      <div class="tier-progress">
+        <h3 class="tier-progress__title">Your path to the Final Match!</h3>
+        <ol class="tier-progress__list">
+          <li><span class="tier-num">1</span><p>Choose from any Group Stage (except Team USA) or Round of 32</p></li>
+          <li><span class="tier-num">2</span><p>Choose from all previous options or Round of 16 or Bronze Final</p></li>
+          <li><span class="tier-num">3</span><p>Choose from all previous options or Team USA Group Stage or Quarter-Finals or Semi-Finals</p></li>
+          <li><span class="tier-num">4</span><p>Choose from all previous options (incl. Team USA Group Stage or QFs or SFs)</p></li>
+          <li class="tier--final"><span class="tier-num">★</span><p>Choose from all matches, including the <strong>FINAL!</strong></p></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Single Matches ================= -->
+  <section class="section matches" id="matches">
+    <div class="container">
+      <div class="section__head section__head--split">
+        <div>
+          <h2 class="h-display dark">Single Matches</h2>
+          <p>Choose from 104 matches across 16 dynamic host cities and venues<sup>*</sup>.</p>
+        </div>
+        <div class="section__head-cta">
+          <a class="btn btn--ghost-dark" href="#">Explore All Matches</a>
+          <a class="btn btn--link-dark" href="#">View Schedule ↗</a>
+        </div>
+      </div>
+
+      <div class="tabs tabs--underline" role="tablist">
+        <button class="tab tab--active" data-match-filter="popular">Popular</button>
+        <button class="tab" data-match-filter="group">Group Stage</button>
+        <button class="tab" data-match-filter="r32">Round of 32</button>
+      </div>
+
+      <div class="match-grid">
+
+        <article class="match-card" data-cat="popular">
+          <div class="match-card__img" style="background-image:url('assets/matches-map.webp')"><span class="tag tag--red">Going Fast</span></div>
+          <div class="match-card__date">
+            <span>Friday <strong>11</strong> June</span>
+            <em>4:00 pm</em>
+          </div>
+          <div class="match-card__info">
+            <p class="match-card__venue">Mexico City Stadium</p>
+            <h4>M1: Mexico vs. South Africa</h4>
+          </div>
+          <div class="match-card__price">
+            <span class="from">From</span>
+            <strong>$0,000</strong>
+            <em>USD each</em>
+          </div>
+          <a class="btn btn--primary btn--sm btn--full" href="#">Buy Now</a>
+        </article>
+
+        <article class="match-card" data-cat="popular">
+          <div class="match-card__img" style="background-image:url('assets/lounge-a.webp')"></div>
+          <div class="match-card__date"><span>Friday <strong>12</strong> June</span><em>4:00 pm</em></div>
+          <div class="match-card__info">
+            <p class="match-card__venue">Los Angeles Stadium</p>
+            <h4>M4: United States vs. Paraguay</h4>
+          </div>
+          <div class="match-card__price"><span class="from">From</span><strong>$0,000</strong><em>USD each</em></div>
+          <a class="btn btn--primary btn--sm btn--full" href="#">Buy Now</a>
+        </article>
+
+        <article class="match-card" data-cat="popular">
+          <div class="match-card__img" style="background-image:url('assets/lounge-b.webp')"></div>
+          <div class="match-card__date"><span>Saturday <strong>13</strong> June</span><em>7:00 pm</em></div>
+          <div class="match-card__info">
+            <p class="match-card__venue">New York New Jersey Stadium</p>
+            <h4>M7: Brazil vs. Morocco</h4>
+          </div>
+          <div class="match-card__price"><span class="from">From</span><strong>$0,000</strong><em>USD each</em></div>
+          <a class="btn btn--primary btn--sm btn--full" href="#">Buy Now</a>
+        </article>
+
+        <article class="match-card" data-cat="group">
+          <div class="match-card__img" style="background-image:url('assets/lounge-c.webp')"></div>
+          <div class="match-card__date"><span>Saturday <strong>13</strong> June</span><em>4:00 pm</em></div>
+          <div class="match-card__info">
+            <p class="match-card__venue">San Francisco Bay Area Stadium</p>
+            <h4>M8: Qatar vs. Switzerland</h4>
+          </div>
+          <div class="match-card__price"><span class="from">From</span><strong>$0,000</strong><em>USD each</em></div>
+          <a class="btn btn--primary btn--sm btn--full" href="#">Buy Now</a>
+        </article>
+
+        <article class="match-card" data-cat="group">
+          <div class="match-card__img" style="background-image:url('assets/lounge-d.webp')"></div>
+          <div class="match-card__date"><span>Sunday <strong>14</strong> June</span><em>7:00 pm</em></div>
+          <div class="match-card__info">
+            <p class="match-card__venue">Philadelphia Stadium</p>
+            <h4>M9: Côte d'Ivoire vs. Ecuador</h4>
+          </div>
+          <div class="match-card__price"><span class="from">From</span><strong>$0,000</strong><em>USD each</em></div>
+          <a class="btn btn--primary btn--sm btn--full" href="#">Buy Now</a>
+        </article>
+
+        <article class="match-card" data-cat="group">
+          <div class="match-card__img" style="background-image:url('assets/offering-a.webp')"></div>
+          <div class="match-card__date"><span>Sunday <strong>14</strong> June</span><em>4:00 pm</em></div>
+          <div class="match-card__info">
+            <p class="match-card__venue">Houston Stadium</p>
+            <h4>M10: Germany vs. Curaçao</h4>
+          </div>
+          <div class="match-card__price"><span class="from">From</span><strong>$0,000</strong><em>USD each</em></div>
+          <a class="btn btn--primary btn--sm btn--full" href="#">Buy Now</a>
+        </article>
+
+        <article class="match-card" data-cat="group">
+          <div class="match-card__img" style="background-image:url('assets/offering-b.webp')"></div>
+          <div class="match-card__date"><span>Sunday <strong>14</strong> June</span><em>7:00 pm</em></div>
+          <div class="match-card__info">
+            <p class="match-card__venue">Dallas Stadium</p>
+            <h4>M11: Netherlands vs. Japan</h4>
+          </div>
+          <div class="match-card__price"><span class="from">From</span><strong>$0,000</strong><em>USD each</em></div>
+          <a class="btn btn--primary btn--sm btn--full" href="#">Buy Now</a>
+        </article>
+
+        <article class="match-card" data-cat="r32">
+          <div class="match-card__img" style="background-image:url('assets/offering-c.webp')"></div>
+          <div class="match-card__date"><span>Friday <strong>3</strong> July</span><em>TBD</em></div>
+          <div class="match-card__info">
+            <p class="match-card__venue">Seattle Stadium</p>
+            <h4>M32: United States vs. Australia</h4>
+          </div>
+          <div class="match-card__price"><span class="from">From</span><strong>$0,000</strong><em>USD each</em></div>
+          <a class="btn btn--primary btn--sm btn--full" href="#">Buy Now</a>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Private Suites ================= -->
+  <section class="section suites" id="private-suites">
+    <div class="container suites__inner">
+      <div class="suites__copy">
+        <p class="eyebrow eyebrow--gold">Exclusive</p>
+        <h2 class="h-display light">Private <br/>Suites</h2>
+        <p class="suites__lede">Level up with this exclusive offering that includes preferred entry, direct seating access, and dedicated service — all to be enjoyed privately among you and your guests.</p>
+        <a class="btn btn--secondary" href="#">Buy Now</a>
+      </div>
+      <figure class="suites__img">
+        <img src="assets/suites.webp" alt="FIFA Private Suite interior" />
+      </figure>
+    </div>
+  </section>
+
+  <!-- ================= Additional Offerings ================= -->
+  <section class="section additional">
+    <div class="container">
+      <div class="section__head">
+        <p class="eyebrow">Want more? <a href="#footer-contact">contact us here</a></p>
+        <h2 class="h-display">Additional Offerings</h2>
+      </div>
+
+      <div class="additional__grid">
+        <article class="addl">
+          <figure><img src="assets/platinum.webp" alt="Platinum access lounge"/></figure>
+          <div class="addl__body">
+            <h3>Platinum access</h3>
+            <p>The most exclusive offering. It delivers an all-encompassing experience with full-service customization and the most premium access available.</p>
+            <a class="btn btn--primary btn--sm" href="#">Register Interest</a>
+          </div>
+        </article>
+
+        <article class="addl">
+          <figure><img src="assets/offering-b.webp" alt="Accommodations"/></figure>
+          <div class="addl__body">
+            <h3>Accommodations</h3>
+            <p>Select your preferred hotels, experiences, and/or car rentals to create your ideal trip package.</p>
+            <a class="btn btn--primary btn--sm" href="#">Register Interest</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Lounges ================= -->
+  <section class="section lounges">
+    <div class="container">
+      <div class="section__head">
+        <h2 class="h-display light">Unrivaled <br/>Lounge access</h2>
+        <p class="section__sub light">After selecting your series, choose from a selection of dynamic lounge offerings at every venue.</p>
+      </div>
+
+      <div class="lounges__grid">
+        <article class="lounge" style="background-image: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85)), url('assets/lounge-b.webp')">
+          <h4>Pitchside Lounge</h4>
+        </article>
+        <article class="lounge" style="background-image: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85)), url('assets/lounge-a.webp')">
+          <h4>VIP</h4>
+        </article>
+        <article class="lounge lounge--feature" style="background-image: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85)), url('assets/trophy.webp')">
+          <span class="tag tag--gold">Most Premium</span>
+          <h4>Trophy Lounge</h4>
+        </article>
+        <article class="lounge" style="background-image: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85)), url('assets/lounge-d.webp')">
+          <h4>Champions Club</h4>
+        </article>
+        <article class="lounge" style="background-image: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85)), url('assets/lounge-c.webp')">
+          <h4>FIFA Pavilion</h4>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Why On Location ================= -->
+  <section class="section why" id="why">
+    <div class="container why__inner">
+      <div class="why__media">
+        <img src="assets/lounge-a.webp" alt="" class="why__big"/>
+        <img src="assets/lounge-c.webp" alt="" class="why__sm-1"/>
+        <img src="assets/lounge-d.webp" alt="" class="why__sm-2"/>
+      </div>
+      <div class="why__copy">
+        <p class="eyebrow">About</p>
+        <h2 class="h-display">Why Choose <br/>on Location?</h2>
+        <p>On Location is the Official Hospitality Provider of the FIFA World Cup 26™. For decades we've delivered once-in-a-lifetime experiences at the world's biggest sporting events.</p>
+        <div class="why__stats">
+          <div><strong>2 million</strong><span>Global Guests Hosted Annually</span></div>
+          <div><strong>25+ years</strong><span>Premium Hospitality Experience</span></div>
+          <div><strong>16 cities</strong><span>Across USA · Canada · Mexico</span></div>
+        </div>
+        <a href="#faq" class="btn btn--primary">Learn More</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="section faq" id="faq">
+    <div class="container">
+      <div class="section__head">
+        <p class="eyebrow">Support</p>
+        <h2 class="h-display">Frequently asked questions</h2>
+      </div>
+      <div class="faq__list">
+        <details>
+          <summary>How is hospitality different from a general ticket?</summary>
+          <p>An Official Hospitality package pairs a premium match ticket with an exclusive pre-match, halftime and post-match experience — including dining, beverages, and access to lounges, entertainment and FIFA Legend appearances. A general ticket only gets you into the stadium seat.</p>
+        </details>
+        <details>
+          <summary>Can I buy hospitality packages from other companies?</summary>
+          <p>On Location is the only official hospitality provider appointed by FIFA. Visit <a href="#">FIFA.com/hospitality</a> to confirm official sellers. We strongly advise against purchasing packages from unauthorized platforms or sellers — booking <a href="#">here</a> guarantees your experience.</p>
+        </details>
+        <details>
+          <summary>Why are there separate FIFA Hospitality Digital Checkout Stores for each of the three host nations (Canada, Mexico, and the U.S.)?</summary>
+          <p>Purchases need to be made in each host nation's currency (in their related digital checkout store). Use the country switcher at the top of the page to select the appropriate store before booking.</p>
+        </details>
+        <details>
+          <summary>What do I need to know re: purchasing packages in different host nations?</summary>
+          <p>Purchases need to be made in each host nation's currency (in their related digital checkout store). Applicable taxes, payment methods, and delivery options vary by country. Our sales agents can help guide you through the process.</p>
+        </details>
+        <details>
+          <summary>Is it possible for different purchasers – those who have purchased packages using separate accounts – to sit together at a match?</summary>
+          <p>Yes — separately purchased packages can typically be linked for seating purposes. Please contact your sales agent at least 30 days prior to the match to coordinate, subject to availability.</p>
+        </details>
+      </div>
+      <div class="faq__more"><a class="btn btn--ghost-dark" href="#">See All FAQs</a></div>
+    </div>
+  </section>
+
+  <!-- ================= Contact / Hospitality Support ================= -->
+  <section class="section support" id="contact">
+    <div class="container">
+      <h2 class="h-display light">What can we help you with?</h2>
+      <div class="support__grid">
+        <aside class="support__aside">
+          <p><strong>USA:</strong> <a href="tel:+18446521685">(+1 844-652-1685)</a></p>
+          <p><strong>CA:</strong> <a href="tel:+18885027844">(+1 888-502-7844)</a></p>
+          <p><strong>MX:</strong> <a href="tel:+528002833520">(+52 800-283-3520)</a></p>
+          <p class="support__faq-note">Looking for more information? Check out our <a href="#faq">Frequently Asked Questions.</a></p>
+        </aside>
+
+        <div class="support__card">
+          <h3 class="support__title">Contact Customer Support</h3>
+          <p class="support__sub">Tell us how we can help.</p>
+          <form class="support__form" onsubmit="event.preventDefault(); this.reset(); alert('Thanks — we will be in touch shortly.');">
+            <div class="support__row">
+              <label>First Name <span>*</span><input type="text" name="first" required></label>
+              <label>Last Name <span>*</span><input type="text" name="last" required></label>
+            </div>
+            <div class="support__row">
+              <label>Customer Email <span>*</span><input type="email" name="email" required></label>
+              <label>Customer Phone <span>*</span><input type="tel" name="phone" required></label>
+            </div>
+            <div class="support__row">
+              <label>Country <span>*</span>
+                <select name="country" required>
+                  <option value="">Select Country</option>
+                  <option>United States</option>
+                  <option>Canada</option>
+                  <option>Mexico</option>
+                </select>
+              </label>
+              <label>Order Number<input type="text" name="order"></label>
+            </div>
+            <label class="support__full">Subject <span>*</span><input type="text" name="subject" required></label>
+            <label class="support__full">Description <span>*</span><textarea name="description" rows="5" required></textarea></label>
+            <button type="submit" class="btn btn--primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA Strip ================= -->
+  <section class="cta-strip" id="account">
+    <div class="container cta-strip__inner">
+      <div>
+        <p class="eyebrow eyebrow--gold">Not ready to make a purchase?</p>
+        <h3>Talk to an Official Sales Agent.</h3>
+      </div>
+      <div class="cta-strip__phones">
+        <a href="tel:+18446521685"><span>USA</span>+1-844-652-1685</a>
+        <a href="tel:+18885027844"><span>Canada</span>+1-888-502-7844</a>
+        <a href="tel:+52800283350"><span>Mexico</span>+52 80 0283 3520</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Footer ================= -->
+  <footer class="footer" id="footer-contact">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <img src="assets/logo-fifa-ol.webp" alt="FIFA World Cup 26 Official Hospitality" class="footer__logo" />
+        <p>On Location is the Official Hospitality Provider of the FIFA World Cup 26™.</p>
+        <div class="footer__partners">
+          <img src="assets/logo-onlocation.svg" alt="On Location" />
+          <img src="assets/logo-fifa.webp" alt="FIFA" />
+          <img src="assets/logo-visa.webp" alt="VISA" />
+        </div>
+      </div>
+
+      <div class="footer__cols">
+        <div>
+          <h5>Explore</h5>
+          <ul>
+            <li><a href="#top">Home</a></li>
+            <li><a href="#why">About Us</a></li>
+            <li><a href="#matches">Matches</a></li>
+            <li><a href="#browse">Venues</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <h5>Account</h5>
+          <ul>
+            <li><a href="#">My Account</a></li>
+            <li><a href="#">My Orders</a></li>
+            <li><a href="#">FIFA World Cup 26™ Sales Agents</a></li>
+            <li><a href="#contact">Contact Us</a></li>
+            <li><a href="#">Request Accessible Hospitality</a></li>
+          </ul>
+        </div>
+        <div>
+          <h5>Contact</h5>
+          <ul class="footer__phones">
+            <li><em>USA</em><a href="tel:+18446521685">+1-844-652-1685</a></li>
+            <li><em>Canada</em><a href="tel:+18885027844">+1-888-502-7844</a></li>
+            <li><em>Mexico</em><a href="tel:+52800283350">+52 80 0283 3520</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      <div class="container footer__legal-inner">
+        <p>© 2025 On Location Events, LLC | All Rights Reserved</p>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">FIFA Ticket Terms of Use</a></li>
+          <li><a href="#">On Location Terms of Use</a></li>
+          <li><a href="#">Hospitality Sales Regulations</a></li>
+          <li><a href="#">Deposit Terms</a></li>
+          <li><a href="#">Cookie Policy</a></li>
+          <li><a href="#">Do Not Sell My Personal Info</a></li>
+          <li><a href="#">Cookies Settings/Preferences</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+
+  <!-- Salesforce Embedded Messaging for Web (MIAW) -->
+  <script type="text/javascript">
+    function initEmbeddedMessaging() {
+      try {
+        embeddedservice_bootstrap.settings.language = 'en_US';
+        embeddedservice_bootstrap.init(
+          '00DWs00000OCFyL',
+          'MessagingChannel1',
+          'https://storm-cef4618e3d50c7.my.site.com/ESWMessagingChannel11777477443188',
+          {
+            scrt2URL: 'https://storm-cef4618e3d50c7.my.salesforce-scrt.com'
+          }
+        );
+      } catch (err) {
+        console.error('Error loading Embedded Messaging: ', err);
+      }
+    }
+  </script>
+  <script type="text/javascript" src="https://storm-cef4618e3d50c7.my.site.com/ESWMessagingChannel11777477443188/assets/js/bootstrap.min.js" onload="initEmbeddedMessaging()"></script>
+</body>
+</html>
