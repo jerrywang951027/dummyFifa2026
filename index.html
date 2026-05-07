@@ -668,23 +668,24 @@
   <script src="script.js"></script>
 
   <!-- Salesforce Embedded Messaging for Web (MIAW) -->
-  <script type="text/javascript">
-    function initEmbeddedMessaging() {
-      try {
-        embeddedservice_bootstrap.settings.language = 'en_US';
-        embeddedservice_bootstrap.init(
-          '00DWs00000OCFyL',
-          'MessagingChannel1',
-          'https://storm-cef4618e3d50c7.my.site.com/ESWMessagingChannel11777477443188',
-          {
-            scrt2URL: 'https://storm-cef4618e3d50c7.my.salesforce-scrt.com'
-          }
-        );
-      } catch (err) {
-        console.error('Error loading Embedded Messaging: ', err);
-      }
-    }
-  </script>
-  <script type="text/javascript" src="https://storm-cef4618e3d50c7.my.site.com/ESWMessagingChannel11777477443188/assets/js/bootstrap.min.js" onload="initEmbeddedMessaging()"></script>
+  <script type='text/javascript'>
+	function initEmbeddedMessaging() {
+		try {
+			embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
+
+			embeddedservice_bootstrap.init(
+				'00DV9000004uKg5',
+				'Agentforce_Iris',
+				'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
+				{
+					scrt2URL: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com'
+				}
+			);
+		} catch (err) {
+			console.error('Error loading Embedded Messaging: ', err);
+		}
+	};
+</script>
+<script type='text/javascript' src='https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
 </body>
 </html>
