@@ -667,25 +667,19 @@
 
   <script src="script.js"></script>
 
-  <!-- Salesforce Embedded Messaging for Web (MIAW) -->
-  <script type='text/javascript'>
-	function initEmbeddedMessaging() {
-		try {
-			embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
+  <!-- Salesforce Embedded Messaging for Web (MIAW) - two instances via iframes -->
+  <iframe
+    src="embedded-chat.html"
+    title="Embedded Chat 1"
+    aria-label="Embedded Chat 1"
+    allow="microphone; camera; clipboard-read; clipboard-write"
+    style="position:fixed; right:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
 
-			embeddedservice_bootstrap.init(
-				'00DV9000004uKg5',
-				'Agentforce_Iris',
-				'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
-				{
-					scrt2URL: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com'
-				}
-			);
-		} catch (err) {
-			console.error('Error loading Embedded Messaging: ', err);
-		}
-	};
-</script>
-<script type='text/javascript' src='https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+  <iframe
+    src="embedded-chat.html"
+    title="Embedded Chat 2"
+    aria-label="Embedded Chat 2"
+    allow="microphone; camera; clipboard-read; clipboard-write"
+    style="position:fixed; left:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
 </body>
 </html>
