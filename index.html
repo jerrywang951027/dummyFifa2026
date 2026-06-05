@@ -544,6 +544,30 @@
     </div>
   </section>
 
+  <!-- ================= Inline Agentforce Chat (Step 3b — third-party embed) ================= -->
+  <section class="section inline-chat" id="agent-help">
+    <div class="container">
+      <div class="section__head">
+        <p class="eyebrow">Ask Our AI Assistant</p>
+        <h2 class="h-display">How can we help?</h2>
+        <p class="section__sub">Get instant answers about hospitality packages, matches, and more.</p>
+      </div>
+      <div id="agent-chat"
+           data-org-id="00DV9000004uKg5"
+           data-deployment="Agentforce_Iris"
+           data-site-url="https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781"
+           data-scrt2-url="https://onlocationexp--staging.sandbox.my.salesforce-scrt.com"
+           data-heading="How can we help?"
+           data-placeholder="Type your question here..."
+           data-starter-prompt-1="What hospitality packages are available?"
+           data-starter-prompt-2="How do I purchase tickets?"
+           data-starter-prompt-3="Where can I see the schedule?"
+           data-debug
+           style="max-width: 900px; margin: 0 auto; min-height: 550px;">
+      </div>
+    </div>
+  </section>
+
   <!-- ================= Contact / Hospitality Support ================= -->
   <section class="section support" id="contact">
     <div class="container">
@@ -667,19 +691,7 @@
 
   <script src="script.js"></script>
 
-  <!-- Salesforce Embedded Messaging for Web (MIAW) - two instances via iframes -->
-  <iframe
-    src="embedded-chat.html"
-    title="Embedded Chat 1"
-    aria-label="Embedded Chat 1"
-    allow="microphone; camera; clipboard-read; clipboard-write"
-    style="position:fixed; right:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
-
-  <iframe
-    src="embedded-chat.html"
-    title="Embedded Chat 2"
-    aria-label="Embedded Chat 2"
-    allow="microphone; camera; clipboard-read; clipboard-write"
-    style="position:fixed; left:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
+  <!-- Inline Agentforce Chat — Step 3b (auto-init via data attributes on #agent-chat above) -->
+  <script src="haaInlineEnhancedChat.js" data-target="agent-chat"></script>
 </body>
 </html>
