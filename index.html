@@ -544,18 +544,6 @@
     </div>
   </section>
 
-  <!-- ================= Inline Agentforce Chat (Step 3b — third-party embed) ================= -->
-  <section class="section inline-chat" id="agent-help">
-    <div class="container">
-      <div class="section__head">
-        <p class="eyebrow">Ask Our AI Assistant</p>
-        <h2 class="h-display">How can we help?</h2>
-        <p class="section__sub">Get instant answers about hospitality packages, matches, and more.</p>
-      </div>
-      <div id="agent-chat" style="max-width: 900px; margin: 0 auto; min-height: 550px;"></div>
-    </div>
-  </section>
-
   <!-- ================= Contact / Hospitality Support ================= -->
   <section class="section support" id="contact">
     <div class="container">
@@ -679,26 +667,19 @@
 
   <script src="script.js"></script>
 
-  <!-- Inline Agentforce Chat — Step 3b (explicit JS init; auto-init's selector
-       in haaInlineEnhancedChat.js looks for src*="enhanced-chat-inline" which
-       does not match the current filename, so we call init() directly). -->
-  <script src="haaInlineEnhancedChat.js"></script>
-  <script>
-    EnhancedChatInline.init({
-      containerId: 'agent-chat',
-      orgId: '00DV9000004uKg5',
-      deploymentApiName: 'Agentforce_Iris',
-      siteUrl: 'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
-      scrt2Url: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com',
-      heading: 'How can we help?',
-      placeholder: 'Type your question here...',
-      quickActions: [
-        'What hospitality packages are available?',
-        'How do I purchase tickets?',
-        'Where can I see the schedule?'
-      ],
-      debug: true
-    });
-  </script>
+  <!-- Salesforce Embedded Messaging for Web (MIAW) - two instances via iframes -->
+  <iframe
+    src="embedded-chat.html"
+    title="Embedded Chat 1"
+    aria-label="Embedded Chat 1"
+    allow="microphone; camera; clipboard-read; clipboard-write"
+    style="position:fixed; right:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
+
+  <iframe
+    src="embedded-chat.html"
+    title="Embedded Chat 2"
+    aria-label="Embedded Chat 2"
+    allow="microphone; camera; clipboard-read; clipboard-write"
+    style="position:fixed; left:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
 </body>
 </html>
