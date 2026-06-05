@@ -552,19 +552,7 @@
         <h2 class="h-display">How can we help?</h2>
         <p class="section__sub">Get instant answers about hospitality packages, matches, and more.</p>
       </div>
-      <div id="agent-chat"
-           data-org-id="00DV9000004uKg5"
-           data-deployment="Agentforce_Iris"
-           data-site-url="https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781"
-           data-scrt2-url="https://onlocationexp--staging.sandbox.my.salesforce-scrt.com"
-           data-heading="How can we help?"
-           data-placeholder="Type your question here..."
-           data-starter-prompt-1="What hospitality packages are available?"
-           data-starter-prompt-2="How do I purchase tickets?"
-           data-starter-prompt-3="Where can I see the schedule?"
-           data-debug
-           style="max-width: 900px; margin: 0 auto; min-height: 550px;">
-      </div>
+      <div id="agent-chat" style="max-width: 900px; margin: 0 auto; min-height: 550px;"></div>
     </div>
   </section>
 
@@ -691,7 +679,26 @@
 
   <script src="script.js"></script>
 
-  <!-- Inline Agentforce Chat — Step 3b (auto-init via data attributes on #agent-chat above) -->
-  <script src="haaInlineEnhancedChat.js" data-target="agent-chat"></script>
+  <!-- Inline Agentforce Chat — Step 3b (explicit JS init; auto-init's selector
+       in haaInlineEnhancedChat.js looks for src*="enhanced-chat-inline" which
+       does not match the current filename, so we call init() directly). -->
+  <script src="haaInlineEnhancedChat.js"></script>
+  <script>
+    EnhancedChatInline.init({
+      containerId: 'agent-chat',
+      orgId: '00DV9000004uKg5',
+      deploymentApiName: 'Agentforce_Iris',
+      siteUrl: 'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
+      scrt2Url: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com',
+      heading: 'How can we help?',
+      placeholder: 'Type your question here...',
+      quickActions: [
+        'What hospitality packages are available?',
+        'How do I purchase tickets?',
+        'Where can I see the schedule?'
+      ],
+      debug: true
+    });
+  </script>
 </body>
 </html>
