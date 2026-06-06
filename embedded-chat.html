@@ -17,25 +17,53 @@
 </head>
 <body>
   <script type='text/javascript'>
-    function initEmbeddedMessaging() {
-      try {
-        embeddedservice_bootstrap.settings.language = 'en_US';
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const org = params.get('org') === 'agentuat' ? 'agentuat' : 'staging';
+      const lang = params.get('lang') || 'en_US';
 
-        embeddedservice_bootstrap.init(
-          '00DV9000004uKg5',
-          'Agentforce_Iris',
-          'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
-          {
-            scrt2URL: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com'
-          }
-        );
-      } catch (err) {
-        console.error('Error loading Embedded Messaging: ', err);
-      }
-    };
+      const ORGS = {
+        staging: {
+          orgId: '00DV9000004uKg5',
+          siteUrl: 'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
+          scrt2URL: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com'
+        },
+        agentuat: {
+          orgId: '00DV9000006H5fl',
+          siteUrl: 'https://onlocationexp--agentuat.sandbox.my.site.com/ESWAgentforceIris1778055798781',
+          scrt2URL: 'https://onlocationexp--agentuat.sandbox.my.salesforce-scrt.com'
+        }
+      };
+
+      const cfg = ORGS[org];
+
+      window.initEmbeddedMessaging = function () {
+        try {
+          embeddedservice_bootstrap.settings.language = lang;
+
+          embeddedservice_bootstrap.init(
+            cfg.orgId,
+            'Agentforce_Iris',
+            cfg.siteUrl,
+            { scrt2URL: cfg.scrt2URL }
+          );
+
+          window.addEventListener('onEmbeddedMessagingReady', () => {
+            embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
+              EndUserLanguage: embeddedservice_bootstrap.settings.language
+            });
+          });
+        } catch (err) {
+          console.error('Error loading Embedded Messaging: ', err);
+        }
+      };
+
+      const s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.src = cfg.siteUrl + '/assets/js/bootstrap.min.js';
+      s.onload = window.initEmbeddedMessaging;
+      document.head.appendChild(s);
+    })();
   </script>
-  <script type='text/javascript'
-          src='https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781/assets/js/bootstrap.min.js'
-          onload='initEmbeddedMessaging()'></script>
 </body>
 </html>

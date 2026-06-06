@@ -667,31 +667,22 @@
 
   <script src="../../script.js"></script>
 
-  <script type='text/javascript'>
-    function initEmbeddedMessaging() {
-        try {
-            embeddedservice_bootstrap.settings.language = 'fr'; // For example, enter 'en' or 'en-US'
+  <!-- Salesforce Embedded Messaging - two MIAW instances (staging + agentuat) via iframes.
+       Each iframe receives the active page locale so the bootstrap language and the
+       EndUserLanguage prechat field reflect the user's selection. -->
+  <iframe
+    src="../../embedded-chat.html?org=staging&lang=es"
+    title="Embedded Chat (staging)"
+    aria-label="Embedded Chat (staging)"
+    allow="microphone; camera; clipboard-read; clipboard-write"
+    style="position:fixed; right:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
 
-            embeddedservice_bootstrap.init(
-                '00DV9000004uKg5',
-                'Agentforce_Iris',
-                'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
-                {
-                    scrt2URL: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com'
-                }
-            );
-
-            window.addEventListener("onEmbeddedMessagingReady", () => {
-                  embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
-                      "EndUserLanguage": embeddedservice_bootstrap.settings.language
-                  });
-              });
-        } catch (err) {
-            console.error('Error loading Embedded Messaging: ', err);
-        }
-    };
-  </script>
-  <script type='text/javascript' src='https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+  <iframe
+    src="../../embedded-chat.html?org=agentuat&lang=es"
+    title="Embedded Chat (agentuat)"
+    aria-label="Embedded Chat (agentuat)"
+    allow="microphone; camera; clipboard-read; clipboard-write"
+    style="position:fixed; left:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
   <script src="../../i18n.js"></script>
 </body>
 </html>
