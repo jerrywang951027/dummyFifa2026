@@ -667,7 +667,7 @@
 
   <script src="script.js"></script>
 
-  <!-- Salesforce Embedded Messaging - two MIAW instances (staging + agentuat) via iframes.
+  <!-- Salesforce Embedded Messaging - three MIAW instances (staging + agentuat + surveyCLT) via iframes.
        Each iframe receives the active page locale so the bootstrap language and the
        EndUserLanguage prechat field reflect the user's selection. -->
   <iframe
@@ -683,5 +683,12 @@
     aria-label="Embedded Chat (agentuat)"
     allow="microphone; camera; clipboard-read; clipboard-write"
     style="position:fixed; left:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
+
+  <iframe
+    src="embedded-chat.html?org=surveyclt&lang=en_US"
+    title="Embedded Chat (surveyCLT)"
+    aria-label="Embedded Chat (surveyCLT)"
+    allow="microphone; camera; clipboard-read; clipboard-write"
+    style="position:fixed; right:0; top:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
 </body>
 </html>

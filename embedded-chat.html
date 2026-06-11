@@ -18,23 +18,31 @@
 <body>
   <script type='text/javascript'>
     (function () {
-      const params = new URLSearchParams(window.location.search);
-      const org = params.get('org') === 'agentuat' ? 'agentuat' : 'staging';
-      const lang = params.get('lang') || 'en_US';
-
       const ORGS = {
         staging: {
           orgId: '00DV9000004uKg5',
+          deploymentName: 'Agentforce_Iris',
           siteUrl: 'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
           scrt2URL: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com'
         },
         agentuat: {
           orgId: '00DV9000006H5fl',
+          deploymentName: 'Agentforce_Iris',
           siteUrl: 'https://onlocationexp--agentuat.sandbox.my.site.com/ESWAgentforceIris1778055798781',
           scrt2URL: 'https://onlocationexp--agentuat.sandbox.my.salesforce-scrt.com'
+        },
+        surveyclt: {
+          orgId: '00DWs00000QLemf',
+          deploymentName: 'surveyCLT',
+          siteUrl: 'https://storm-af1d10a83be0f2.my.site.com/ESWsurveyCLT1781180619062',
+          scrt2URL: 'https://storm-af1d10a83be0f2.my.salesforce-scrt.com'
         }
       };
 
+      const params = new URLSearchParams(window.location.search);
+      const orgParam = params.get('org');
+      const org = ORGS[orgParam] ? orgParam : 'staging';
+      const lang = params.get('lang') || 'en_US';
       const cfg = ORGS[org];
 
       window.initEmbeddedMessaging = function () {
@@ -43,7 +51,7 @@
 
           embeddedservice_bootstrap.init(
             cfg.orgId,
-            'Agentforce_Iris',
+            cfg.deploymentName,
             cfg.siteUrl,
             { scrt2URL: cfg.scrt2URL }
           );
