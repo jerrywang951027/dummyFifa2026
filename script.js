@@ -1,6 +1,30 @@
 /* FIFA World Cup 2026 — Official Hospitality (replica)
    Lightweight vanilla-JS for all interactive behaviour. */
 (() => {
+  // --------- Simple client-side password gate ----------
+  // NOTE: cosmetic only — credentials are visible in source. See index.html for details.
+  const AUTH_USER = 'sfdc';
+  const AUTH_PASS = 'admin123';
+  const authForm = document.getElementById('authForm');
+  if (authForm) {
+    const userEl = document.getElementById('authUser');
+    const passEl = document.getElementById('authPass');
+    const errEl  = document.getElementById('authError');
+    const gateEl = document.getElementById('authGate');
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (userEl.value === AUTH_USER && passEl.value === AUTH_PASS) {
+        try { sessionStorage.setItem('fifa26-auth', 'ok'); } catch (_) { /* ignore */ }
+        document.documentElement.classList.remove('needs-auth');
+        if (gateEl) gateEl.style.display = 'none';
+      } else {
+        errEl.hidden = false;
+        passEl.value = '';
+        passEl.focus();
+      }
+    });
+  }
+
   // --------- Country selector modal ----------
   const modal = document.getElementById('countryModal');
   const countryBtn = document.getElementById('countryBtn');

@@ -10,8 +10,80 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- ================= Simple client-side password gate =================
+       NOTE: This is NOT real security. The credentials are visible in
+       this file's source and anyone can bypass via DevTools. It is a
+       cosmetic gate only. -->
+  <style>
+    .auth-gate { display: none; }
+    html.needs-auth, html.needs-auth body { overflow: hidden; }
+    html.needs-auth body > *:not(.auth-gate) { display: none !important; }
+    html.needs-auth .auth-gate {
+      display: flex;
+      position: fixed; inset: 0;
+      background: #050a0f;
+      z-index: 100000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .auth-gate__card {
+      width: 100%; max-width: 360px;
+      background: #ffffff; color: #050a0f;
+      border-radius: 12px; padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      font-family: 'Noto Sans', system-ui, sans-serif;
+    }
+    .auth-gate__card h2 { margin: 0 0 6px; font-size: 22px; }
+    .auth-gate__card p.sub { margin: 0 0 18px; font-size: 13px; color: #6a7280; }
+    .auth-gate__card label { display: block; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
+    .auth-gate__card input {
+      display: block; width: 100%; box-sizing: border-box;
+      margin-top: 4px; padding: 10px 12px; font-size: 14px;
+      border: 1px solid #d0d5dd; border-radius: 8px;
+    }
+    .auth-gate__card button {
+      width: 100%; padding: 12px 16px; margin-top: 6px;
+      border: 0; border-radius: 8px; background: #d4af37; color: #050a0f;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .auth-gate__card button:hover { background: #c69e2c; }
+    .auth-gate__error {
+      margin: 12px 0 0; padding: 8px 12px;
+      background: #fef2f2; color: #b42318;
+      border-radius: 6px; font-size: 13px;
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        if (sessionStorage.getItem('fifa26-auth') !== 'ok') {
+          document.documentElement.classList.add('needs-auth');
+        }
+      } catch (err) {
+        document.documentElement.classList.add('needs-auth');
+      }
+    })();
+  </script>
 </head>
 <body>
+
+  <!-- Auth gate (visible only when html.needs-auth) -->
+  <div class="auth-gate" id="authGate" role="dialog" aria-modal="true" aria-labelledby="authGateTitle">
+    <form class="auth-gate__card" id="authForm" autocomplete="off">
+      <h2 id="authGateTitle">Restricted Access</h2>
+      <p class="sub">Please sign in to view this site.</p>
+      <label>Username
+        <input type="text" name="username" id="authUser" autocomplete="username" required>
+      </label>
+      <label>Password
+        <input type="password" name="password" id="authPass" autocomplete="current-password" required>
+      </label>
+      <button type="submit">Sign In</button>
+      <p class="auth-gate__error" id="authError" hidden>Invalid username or password.</p>
+    </form>
+  </div>
 
   <!-- ================= Country selector overlay ================= -->
   <div class="country-modal" id="countryModal" hidden>
