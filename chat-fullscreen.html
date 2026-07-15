@@ -119,24 +119,32 @@
       // We can't reach inside it, but we CAN resize the iframe element to fill the band
       // between the custom title and the custom input bar. NOTE: an iframe needs an
       // EXPLICIT height (height:auto collapses it).
+      // Height of the widget's native input strip (input + "Powered by" footer) to
+      // clip off the bottom of the iframe. Tunable — bump up if any input peeks through.
+      const NATIVE_INPUT_CLIP = 112;
       function sizeContainer() {
         const el = document.getElementById('embeddedMessagingFrame');
         if (!el) return;
+        const TOP = 84, BAND_BOTTOM = 162; // px reserved for title / custom input bar
         const st = el.style;
         st.setProperty('position', 'fixed', 'important');
-        st.setProperty('top', '84px', 'important');
+        st.setProperty('top', TOP + 'px', 'important');
         st.setProperty('bottom', 'auto', 'important');
         st.setProperty('right', 'auto', 'important');
         st.setProperty('left', '50%', 'important');
         st.setProperty('transform', 'translateX(-50%)', 'important');
         st.setProperty('width', 'min(1200px, 92vw)', 'important');
         st.setProperty('max-width', '92vw', 'important');
-        st.setProperty('height', 'calc(100vh - 84px - 162px)', 'important');
+        // Make the iframe taller than the visible band by the clip amount, then clip
+        // the bottom strip so the native input row is hidden while the transcript fills.
+        st.setProperty('height', 'calc(100vh - ' + TOP + 'px - ' + BAND_BOTTOM + 'px + ' + NATIVE_INPUT_CLIP + 'px)', 'important');
         st.setProperty('max-height', 'none', 'important');
         st.setProperty('min-height', '0', 'important');
         st.setProperty('border', '0', 'important');
         st.setProperty('border-radius', '14px', 'important');
         st.setProperty('box-shadow', '0 1px 4px rgba(0,0,0,.08)', 'important');
+        // Clip off the bottom input strip (cross-origin: can't hide it inside the frame).
+        st.setProperty('clip-path', 'inset(0 0 ' + NATIVE_INPUT_CLIP + 'px 0 round 14px)', 'important');
       }
 
       function applyAll() {
