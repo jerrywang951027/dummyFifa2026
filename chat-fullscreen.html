@@ -28,6 +28,8 @@
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147483000;
       padding: 12px 24px 18px; box-sizing: border-box; background: var(--amaBg);
     }
+    /* hidden until a conversation is created */
+    .ama-bottom.ama-hidden { display: none !important; }
     .ama-pill {
       max-width: 1200px; margin: 0 auto; background: var(--amaBlue);
       border-radius: 36px; padding: 8px; display: flex; align-items: center; gap: 8px;
@@ -61,7 +63,7 @@
     <button class="ama-close" id="amaClose" aria-label="Close chat" title="Close chat">&#10005;</button>
   </div>
 
-  <div class="ama-bottom">
+  <div class="ama-bottom ama-hidden">
     <div class="ama-pill">
       <input id="amaInput" type="text" placeholder="Ask me anything or log in for personalized help" autocomplete="off" aria-label="Message" />
       <button class="ama-send" id="amaSend" aria-label="Send message" title="Send">&#10148;</button>
@@ -138,7 +140,10 @@
       function sizeContainer() {
         const el = document.getElementById('embeddedMessagingFrame');
         if (!el) return;
-        const TOP = 84, BAND_BOTTOM = 162; // px reserved for title / custom input bar
+        const TOP = 84;
+        const bar = document.querySelector('.ama-bottom');
+        const barHidden = !bar || bar.classList.contains('ama-hidden');
+        const BAND_BOTTOM = barHidden ? 24 : 162; // reserve space only when the custom bar is shown
         const st = el.style;
         st.setProperty('position', 'fixed', 'important');
         st.setProperty('top', TOP + 'px', 'important');
@@ -223,6 +228,15 @@
       const quitBtn = document.getElementById('amaQuit');
       if (quitBtn) quitBtn.addEventListener('click', closeSession);
       document.querySelectorAll('.ama-chip').forEach((chip) => chip.addEventListener('click', () => sendMessage(chip.textContent)));
+
+      // Show the custom input bar only after a conversation has been created.
+      const bottomBar = document.querySelector('.ama-bottom');
+      function showBottom() { if (bottomBar) bottomBar.classList.remove('ama-hidden'); sizeContainer(); if (input) input.focus(); }
+      function hideBottom() { if (bottomBar) bottomBar.classList.add('ama-hidden'); sizeContainer(); }
+      window.addEventListener('onEmbeddedMessagingConversationStarted', showBottom);
+      window.addEventListener('onEmbeddedMessagingConversationOpened', showBottom);
+      window.addEventListener('onEmbeddedMessagingConversationClosed', hideBottom);
+      window.addEventListener('onEmbeddedMessagingWindowClosed', hideBottom);
 
       /* ---------- Boot MIAW ---------- */
       window.initEmbeddedMessaging = function () {
