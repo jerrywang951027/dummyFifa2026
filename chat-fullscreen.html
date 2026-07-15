@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ask Iris — FIFA World Cup 2026 Hospitality</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background: #f4f5f8;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    /* Force the MIAW Enhanced Web Chat window to fill the whole viewport
+       instead of docking as a floating bubble.
+       NOTE: these target Salesforce-generated class names, which are not a
+       stable contract — verify/adjust in DevTools if a release changes them. */
+    .embeddedMessagingFrame,
+    iframe.embeddedMessagingFrame,
+    #embeddedMessagingFrame,
+    .embedded-messaging .embeddedMessagingConversationContainer,
+    .embeddedMessagingConversationContainer {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      min-height: 100vh !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+    /* keep it full-window: hide the collapse/minimize control */
+    .embeddedMessagingMinimizeButton,
+    .embedded-messaging button.minimizeButton {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <script type='text/javascript'>
+    (function () {
+      // onLocation STAGING — Agentforce Iris MIAW deployment
+      const cfg = {
+        orgId: '00DV9000004uKg5',
+        deploymentName: 'Agentforce_Iris',
+        siteUrl: 'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
+        scrt2URL: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com'
+      };
+
+      const params = new URLSearchParams(window.location.search);
+      const lang = params.get('lang') || 'en_US';
+
+      window.initEmbeddedMessaging = function () {
+        try {
+          embeddedservice_bootstrap.settings.language = lang;
+
+          embeddedservice_bootstrap.init(
+            cfg.orgId,
+            cfg.deploymentName,
+            cfg.siteUrl,
+            { scrt2URL: cfg.scrt2URL }
+          );
+
+          window.addEventListener('onEmbeddedMessagingReady', () => {
+            try {
+              embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
+                EndUserLanguage: embeddedservice_bootstrap.settings.language
+              });
+            } catch (e) { /* prechat optional */ }
+
+            // Auto-open the chat, maximized, so it fills the window on load.
+            if (embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
+              embeddedservice_bootstrap.utilAPI.launchChat()
+                .catch((e) => console.error('launchChat failed: ', e));
+            }
+          });
+        } catch (err) {
+          console.error('Error loading Embedded Messaging: ', err);
+        }
+      };
+
+      const s = document.createElement('script');
+      s.type = 'text/javascript';
+      s.src = cfg.siteUrl + '/assets/js/bootstrap.min.js';
+      s.onload = window.initEmbeddedMessaging;
+      document.head.appendChild(s);
+    })();
+  </script>
+</body>
+</html>
