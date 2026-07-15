@@ -137,6 +137,8 @@
       // We can't reach inside it, but we CAN resize the iframe element to fill the band
       // between the custom title and the custom input bar. NOTE: an iframe needs an
       // EXPLICIT height (height:auto collapses it).
+      // Height (px) of the widget's native input strip to clip during a live conversation.
+      const NATIVE_INPUT_CLIP = 88;
       function sizeContainer() {
         const el = document.getElementById('embeddedMessagingFrame');
         if (!el) return;
@@ -144,6 +146,7 @@
         const bar = document.querySelector('.ama-bottom');
         const barHidden = !bar || bar.classList.contains('ama-hidden');
         const BAND_BOTTOM = barHidden ? 24 : 162; // reserve space only when the custom bar is shown
+        const CLIP = barHidden ? 0 : NATIVE_INPUT_CLIP; // hide native input only during a live conversation
         const st = el.style;
         st.setProperty('position', 'fixed', 'important');
         st.setProperty('top', TOP + 'px', 'important');
@@ -153,15 +156,15 @@
         st.setProperty('transform', 'translateX(-50%)', 'important');
         st.setProperty('width', 'min(1200px, 92vw)', 'important');
         st.setProperty('max-width', '92vw', 'important');
-        // Fill the band. NOTE: we do NOT clip the bottom — clipping also hides the
-        // prechat "Start Conversation" button (cross-origin iframe: can't selectively hide).
-        st.setProperty('height', 'calc(100vh - ' + TOP + 'px - ' + BAND_BOTTOM + 'px)', 'important');
+        // Grow the iframe by the clip amount so the visible area still fills the band;
+        // clip the native input strip only during a conversation (CLIP>0), never during prechat.
+        st.setProperty('height', 'calc(100vh - ' + TOP + 'px - ' + BAND_BOTTOM + 'px + ' + CLIP + 'px)', 'important');
         st.setProperty('max-height', 'none', 'important');
         st.setProperty('min-height', '0', 'important');
         st.setProperty('border', '0', 'important');
         st.setProperty('border-radius', '14px', 'important');
         st.setProperty('box-shadow', '0 1px 4px rgba(0,0,0,.08)', 'important');
-        st.setProperty('clip-path', 'none', 'important');
+        st.setProperty('clip-path', CLIP ? ('inset(0 0 ' + CLIP + 'px 0 round 14px)') : 'none', 'important');
       }
 
       function applyAll() {
