@@ -42,6 +42,11 @@
       display: flex; align-items: center; justify-content: center;
     }
     .ama-send:hover { background: rgba(255,255,255,.4); }
+    .ama-quit {
+      height: 48px; border-radius: 24px; border: 0; cursor: pointer; white-space: nowrap;
+      background: #d0342c; color: #fff; font-size: .95rem; font-weight: 600; padding: 0 18px;
+    }
+    .ama-quit:hover { background: #b02a24; }
     .ama-chips { max-width: 1200px; margin: 12px auto 0; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
     .ama-chip {
       border: 1px solid var(--amaBlue); color: var(--amaBlue); background: #fff;
@@ -60,6 +65,7 @@
     <div class="ama-pill">
       <input id="amaInput" type="text" placeholder="Ask me anything or log in for personalized help" autocomplete="off" aria-label="Message" />
       <button class="ama-send" id="amaSend" aria-label="Send message" title="Send">&#10148;</button>
+      <button class="ama-quit" id="amaQuit" aria-label="Quit and end session" title="Quit &amp; end session">Quit</button>
     </div>
     <div class="ama-chips">
       <button class="ama-chip">Match schedule</button>
@@ -71,14 +77,24 @@
 
   <script type='text/javascript'>
     (function () {
-      // onLocation STAGING — Agentforce Iris MIAW deployment
-      const cfg = {
-        orgId: '00DV9000004uKg5',
-        deploymentName: 'Agentforce_Iris',
-        siteUrl: 'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
-        scrt2URL: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com'
+      // onLocation MIAW deployments (Agentforce Iris) per environment.
+      const ORGS = {
+        staging: {
+          orgId: '00DV9000004uKg5',
+          deploymentName: 'Agentforce_Iris',
+          siteUrl: 'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
+          scrt2URL: 'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com'
+        },
+        agentuat: {
+          orgId: '00DV9000006H5fl',
+          deploymentName: 'Agentforce_Iris',
+          siteUrl: 'https://onlocationexp--agentuat.sandbox.my.site.com/ESWAgentforceIris1778055798781',
+          scrt2URL: 'https://onlocationexp--agentuat.sandbox.my.salesforce-scrt.com'
+        }
       };
       const params = new URLSearchParams(window.location.search);
+      const orgParam = params.get('org');
+      const cfg = ORGS[orgParam] || ORGS.staging;
       const lang = params.get('lang') || 'en_US';
       const DEBUG = params.get('debug') === '1';
 
@@ -208,6 +224,8 @@
       sendBtn.addEventListener('click', () => sendMessage());
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
       closeBtn.addEventListener('click', closeSession);
+      const quitBtn = document.getElementById('amaQuit');
+      if (quitBtn) quitBtn.addEventListener('click', closeSession);
       document.querySelectorAll('.ama-chip').forEach((chip) => chip.addEventListener('click', () => sendMessage(chip.textContent)));
 
       /* ---------- Boot MIAW ---------- */

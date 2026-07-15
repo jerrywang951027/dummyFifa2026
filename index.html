@@ -743,19 +743,14 @@
   <!-- Salesforce Embedded Messaging - three MIAW instances (staging + agentuat + surveyCLT) via iframes.
        Each iframe receives the active page locale so the bootstrap language and the
        EndUserLanguage prechat field reflect the user's selection. -->
-  <iframe
-    src="embedded-chat.html?org=staging&lang=en_US"
-    title="Embedded Chat (staging)"
-    aria-label="Embedded Chat (staging)"
-    allow="microphone; camera; clipboard-read; clipboard-write"
-    style="position:fixed; right:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
+  <!-- Chat launchers: clicking opens the full-screen MIAW page for each environment. -->
+  <a href="chat-fullscreen.html?org=staging&lang=en_US"
+     title="Chat with Iris (Staging)" aria-label="Chat with Iris (Staging)"
+     style="position:fixed; right:24px; bottom:24px; z-index:9999; width:62px; height:62px; border-radius:50%; background:#3b39c4; color:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; text-decoration:none; box-shadow:0 4px 14px rgba(0,0,0,.28);">&#128172;</a>
 
-  <iframe
-    src="embedded-chat.html?org=agentuat&lang=en_US"
-    title="Embedded Chat (agentuat)"
-    aria-label="Embedded Chat (agentuat)"
-    allow="microphone; camera; clipboard-read; clipboard-write"
-    style="position:fixed; left:0; bottom:0; width:420px; height:640px; border:0; z-index:9999; background:transparent; pointer-events:auto;"></iframe>
+  <a href="chat-fullscreen.html?org=agentuat&lang=en_US"
+     title="Chat with Iris (UAT)" aria-label="Chat with Iris (UAT)"
+     style="position:fixed; left:24px; bottom:24px; z-index:9999; width:62px; height:62px; border-radius:50%; background:#0aa06e; color:#fff; display:flex; align-items:center; justify-content:center; font-size:28px; text-decoration:none; box-shadow:0 4px 14px rgba(0,0,0,.28);">&#128172;</a>
 
   <!-- surveyCLT MIAW iframe temporarily hidden
   <iframe
