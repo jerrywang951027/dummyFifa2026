@@ -98,23 +98,11 @@
       // CSS injected into EVERY shadow root + the host doc: hide the widget's own
       // header + input footer, and make the conversation fill its container.
       const INJECT_ID = 'ama-shadow-style';
+      // Conservative first pass: reliably hide the native text input (the only
+      // <textarea> in the widget). The header hide is refined once we have the
+      // exact class names from ?debug=1.
       const INJECT_CSS = `
-        /* hide the widget's native header bar (title / End session / minimize) */
-        [class*="Header"], [class*="header"],
-        [class*="MinimizeButton"], [class*="minimize"],
-        [class*="EndButton"], [class*="closeConversation"] { display:none !important; }
-        /* hide the widget's native message input / footer / attachments */
-        [class*="InputContainer"], [class*="inputContainer"],
-        [class*="TextInput"], [class*="messagingInput"],
-        [class*="Footer"], [class*="footer"],
-        [class*="Composer"], [class*="composer"],
         textarea { display:none !important; }
-        /* let the conversation transcript fill all available space */
-        [class*="conversation"], [class*="Conversation"],
-        [class*="messageArea"], [class*="MessageArea"],
-        [class*="chatContent"], [class*="scroller"], [class*="Scroller"] {
-          height:100% !important; max-height:100% !important; flex:1 1 auto !important;
-        }
       `;
       function injectInto(root) {
         try {
@@ -181,8 +169,19 @@
             });
           } catch (e) {}
         });
-        console.log('%c[AMA shadow dump]\n' + lines.join('\n'), 'color:#3b39c4');
-        window.__amaShadowDump = lines.join('\n');
+        const text = lines.join('\n');
+        console.log('%c[AMA shadow dump]\n' + text, 'color:#3b39c4');
+        window.__amaShadowDump = text;
+        // Also render the dump into a selectable box so it's easy to copy.
+        let box = document.getElementById('ama-dump');
+        if (!box) {
+          box = document.createElement('textarea');
+          box.id = 'ama-dump';
+          box.readOnly = true;
+          box.style.cssText = 'position:fixed;left:12px;top:80px;width:520px;height:62vh;z-index:2147483647;font:11px/1.35 monospace;background:#fff;color:#111;border:2px solid #3b39c4;border-radius:8px;padding:8px;white-space:pre;overflow:auto;';
+          document.body.appendChild(box);
+        }
+        box.value = text;
       }
 
       /* ---------- Custom input -> send into the conversation ---------- */
@@ -225,15 +224,18 @@
           embeddedservice_bootstrap.settings.language = lang;
           embeddedservice_bootstrap.init(cfg.orgId, cfg.deploymentName, cfg.siteUrl, { scrt2URL: cfg.scrt2URL });
 
+          // launchChat must be called AFTER the button-created event (not onReady).
+          window.addEventListener('onEmbeddedMessagingButtonCreated', () => {
+            if (embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
+              embeddedservice_bootstrap.utilAPI.launchChat().catch((e) => console.error('launchChat failed:', e));
+            }
+          });
           window.addEventListener('onEmbeddedMessagingReady', () => {
             try {
               embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({ EndUserLanguage: embeddedservice_bootstrap.settings.language });
             } catch (e) {}
-            if (embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
-              embeddedservice_bootstrap.utilAPI.launchChat().catch((e) => console.error('launchChat failed:', e));
-            }
             // Re-apply styling as the widget renders / re-renders.
-            for (const t of [300, 800, 1500, 3000, 5000]) setTimeout(applyAll, t);
+            for (const t of [300, 800, 1500, 3000, 5000, 8000]) setTimeout(applyAll, t);
             const mo = new MutationObserver(() => applyAll());
             mo.observe(document.body, { childList: true, subtree: true });
           });
