@@ -5,18 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ask me anything — FIFA World Cup 2026 Hospitality</title>
   <style>
-    :root { --amaBlue: #3b39c4; --amaBg: #f4f5f8; }
+    :root { --amaBlue: #3b39c4; --amaBg: #f4f5f8; --amaTop: 72px; --amaBottom: 150px; }
     html, body {
       margin: 0; padding: 0; height: 100%; width: 100%;
       overflow: hidden; background: var(--amaBg);
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
-
-    /* ---- Custom title bar (replaces the MIAW header) ---- */
     .ama-top {
-      position: fixed; top: 0; left: 0; right: 0; height: 72px;
+      position: fixed; top: 0; left: 0; right: 0; height: var(--amaTop);
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0 28px; box-sizing: border-box; z-index: 10; background: var(--amaBg);
+      padding: 0 28px; box-sizing: border-box; z-index: 2147483000; background: var(--amaBg);
     }
     .ama-title { color: var(--amaBlue); font-weight: 800; font-style: italic; font-size: 2rem; margin: 0; }
     .ama-close {
@@ -26,46 +24,9 @@
     }
     .ama-close:hover { background: #f0f0f5; }
 
-    /* ---- The region where the MIAW conversation renders ----
-       We position the Salesforce-generated container into the middle band and
-       hide its native header + input footer so our own chrome takes over.
-       NOTE: these selectors target Salesforce-generated class names, which are
-       NOT a stable contract — verify/adjust in DevTools per release. */
-    .embeddedMessagingFrame,
-    iframe.embeddedMessagingFrame,
-    #embeddedMessagingFrame,
-    .embedded-messaging .embeddedMessagingConversationContainer,
-    .embeddedMessagingConversationContainer {
-      position: fixed !important;
-      top: 84px !important;
-      bottom: 168px !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: min(1200px, 92vw) !important;
-      height: auto !important;
-      max-width: 92vw !important;
-      max-height: none !important;
-      border: 0 !important;
-      border-radius: 14px !important;
-      box-shadow: 0 1px 4px rgba(0,0,0,.08) !important;
-      background: #fff !important;
-    }
-    /* hide the widget's own header (we render our own title) */
-    .embeddedMessagingHeader,
-    .embedded-messaging .embeddedMessagingHeader,
-    .embeddedMessagingMinimizeButton { display: none !important; }
-    /* hide the widget's own text input / footer (we render our own) */
-    .embeddedMessagingInputContainer,
-    .embedded-messaging .embeddedMessagingInputContainer,
-    .embeddedMessagingInputFooter,
-    .embeddedMessagingBottomContainer,
-    textarea[data-id="messagingTextarea"],
-    textarea.embeddedMessagingInput { display: none !important; }
-
-    /* ---- Custom bottom input bar + chips ---- */
     .ama-bottom {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-      padding: 12px 24px 20px; box-sizing: border-box; background: var(--amaBg);
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147483000;
+      padding: 12px 24px 18px; box-sizing: border-box; background: var(--amaBg);
     }
     .ama-pill {
       max-width: 1200px; margin: 0 auto; background: var(--amaBlue);
@@ -90,7 +51,6 @@
   </style>
 </head>
 <body>
-  <!-- Custom chrome -->
   <div class="ama-top">
     <h1 class="ama-title">Ask me anything</h1>
     <button class="ama-close" id="amaClose" aria-label="Close chat" title="Close chat">&#10005;</button>
@@ -98,8 +58,7 @@
 
   <div class="ama-bottom">
     <div class="ama-pill">
-      <input id="amaInput" type="text" placeholder="Ask me anything or log in for personalized help"
-             autocomplete="off" aria-label="Message" />
+      <input id="amaInput" type="text" placeholder="Ask me anything or log in for personalized help" autocomplete="off" aria-label="Message" />
       <button class="ama-send" id="amaSend" aria-label="Send message" title="Send">&#10148;</button>
     </div>
     <div class="ama-chips">
@@ -121,15 +80,112 @@
       };
       const params = new URLSearchParams(window.location.search);
       const lang = params.get('lang') || 'en_US';
+      const DEBUG = params.get('debug') === '1';
 
       const input = document.getElementById('amaInput');
       const sendBtn = document.getElementById('amaSend');
       const closeBtn = document.getElementById('amaClose');
 
-      // --- Send a message into the MIAW conversation via the Embedded Service SDK.
-      // NOTE: sendTextMessage is documented for CLT components (configuration.util);
-      // at the host level it is under-documented but available in ECv2 field builds.
-      // We call it defensively and log if it's unavailable in this release.
+      /* ---------- Shadow-DOM helpers (ECv2 renders inside nested shadow roots) ---------- */
+      function walkShadowRoots(root, cb) {
+        if (!root) return;
+        try { cb(root); } catch (e) {}
+        let nodes;
+        try { nodes = root.querySelectorAll('*'); } catch (e) { return; }
+        for (const n of nodes) { if (n.shadowRoot) walkShadowRoots(n.shadowRoot, cb); }
+      }
+
+      // CSS injected into EVERY shadow root + the host doc: hide the widget's own
+      // header + input footer, and make the conversation fill its container.
+      const INJECT_ID = 'ama-shadow-style';
+      const INJECT_CSS = `
+        /* hide the widget's native header bar (title / End session / minimize) */
+        [class*="Header"], [class*="header"],
+        [class*="MinimizeButton"], [class*="minimize"],
+        [class*="EndButton"], [class*="closeConversation"] { display:none !important; }
+        /* hide the widget's native message input / footer / attachments */
+        [class*="InputContainer"], [class*="inputContainer"],
+        [class*="TextInput"], [class*="messagingInput"],
+        [class*="Footer"], [class*="footer"],
+        [class*="Composer"], [class*="composer"],
+        textarea { display:none !important; }
+        /* let the conversation transcript fill all available space */
+        [class*="conversation"], [class*="Conversation"],
+        [class*="messageArea"], [class*="MessageArea"],
+        [class*="chatContent"], [class*="scroller"], [class*="Scroller"] {
+          height:100% !important; max-height:100% !important; flex:1 1 auto !important;
+        }
+      `;
+      function injectInto(root) {
+        try {
+          if (!root || root.getElementById && root.getElementById(INJECT_ID)) return;
+          if (root.querySelector && root.querySelector('#' + INJECT_ID)) return;
+          const style = document.createElement('style');
+          style.id = INJECT_ID;
+          style.textContent = INJECT_CSS;
+          (root.appendChild ? root : document.head).appendChild(style);
+        } catch (e) {}
+      }
+
+      // Size the outer (light-DOM) widget container to fill the band between the
+      // custom title and the custom input bar.
+      function sizeContainer() {
+        const sels = [
+          '.embedded-messaging', '#embedded-messaging',
+          '[class*="embeddedMessagingFrame"]', '[id*="embeddedMessagingFrame"]',
+          '[class*="embeddedMessagingConversation"]', '[class*="embeddedMessagingWindow"]',
+          '[class*="embeddedMessaging"]'
+        ];
+        for (const s of sels) {
+          document.querySelectorAll(s).forEach((el) => {
+            if (el.closest && (el.closest('.ama-top') || el.closest('.ama-bottom'))) return;
+            const st = el.style;
+            st.setProperty('position', 'fixed', 'important');
+            st.setProperty('top', '84px', 'important');
+            st.setProperty('bottom', '162px', 'important');
+            st.setProperty('left', '50%', 'important');
+            st.setProperty('transform', 'translateX(-50%)', 'important');
+            st.setProperty('width', 'min(1200px, 92vw)', 'important');
+            st.setProperty('height', 'auto', 'important');
+            st.setProperty('max-height', 'none', 'important');
+            st.setProperty('max-width', '92vw', 'important');
+            st.setProperty('inset', 'auto', 'important');
+            st.setProperty('border-radius', '14px', 'important');
+            st.setProperty('box-shadow', '0 1px 4px rgba(0,0,0,.08)', 'important');
+          });
+        }
+      }
+
+      function applyAll() {
+        sizeContainer();
+        injectInto(document.head);
+        walkShadowRoots(document.body, injectInto);
+        if (DEBUG) dumpShadow();
+      }
+
+      // Debug: dump the widget's shadow-DOM structure so we can lock exact selectors.
+      function dumpShadow() {
+        const lines = [];
+        walkShadowRoots(document.body, (root) => {
+          const host = root.host;
+          if (!host) return;
+          const hc = host.getAttribute && host.getAttribute('class');
+          lines.push('HOST: ' + host.tagName.toLowerCase() + (hc ? '.' + hc.trim().split(/\s+/).join('.') : ''));
+          try {
+            root.querySelectorAll('*').forEach((e) => {
+              const c = e.getAttribute && e.getAttribute('class');
+              const did = e.getAttribute && e.getAttribute('data-id');
+              if (c || did || /textarea|button/i.test(e.tagName)) {
+                lines.push('  ' + e.tagName.toLowerCase() + (c ? '.' + c.trim().split(/\s+/).join('.') : '') + (did ? '[data-id=' + did + ']' : ''));
+              }
+            });
+          } catch (e) {}
+        });
+        console.log('%c[AMA shadow dump]\n' + lines.join('\n'), 'color:#3b39c4');
+        window.__amaShadowDump = lines.join('\n');
+      }
+
+      /* ---------- Custom input -> send into the conversation ---------- */
       function sendMessage(text) {
         const msg = (text != null ? text : input.value || '').trim();
         if (!msg) return;
@@ -138,16 +194,12 @@
           if (api && typeof api.sendTextMessage === 'function') {
             api.sendTextMessage(msg).catch((e) => console.error('sendTextMessage failed:', e));
           } else {
-            console.warn('embeddedservice_bootstrap.utilAPI.sendTextMessage is not available in this deployment/release.');
+            console.warn('embeddedservice_bootstrap.utilAPI.sendTextMessage not available in this release.');
           }
-        } catch (e) {
-          console.error('Error sending message:', e);
-        }
-        input.value = '';
-        input.focus();
+        } catch (e) { console.error('Error sending message:', e); }
+        input.value = ''; input.focus();
       }
 
-      // --- Close / end the session and return home.
       function closeSession() {
         const done = () => { window.location.href = 'index.html'; };
         try {
@@ -155,25 +207,19 @@
           if (b && b.userVerificationAPI && typeof b.userVerificationAPI.clearSession === 'function') {
             b.userVerificationAPI.clearSession(true)
               .then(() => b.utilAPI && b.utilAPI.removeAllComponents && b.utilAPI.removeAllComponents())
-              .catch(() => {})
-              .finally(done);
-          } else if (b && b.utilAPI && typeof b.utilAPI.removeAllComponents === 'function') {
-            try { b.utilAPI.removeAllComponents(); } catch (e) {}
-            done();
-          } else {
-            done();
-          }
+              .catch(() => {}).finally(done);
+          } else if (b && b.utilAPI && b.utilAPI.removeAllComponents) {
+            try { b.utilAPI.removeAllComponents(); } catch (e) {} done();
+          } else { done(); }
         } catch (e) { done(); }
       }
 
       sendBtn.addEventListener('click', () => sendMessage());
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
       closeBtn.addEventListener('click', closeSession);
-      document.querySelectorAll('.ama-chip').forEach((chip) => {
-        chip.addEventListener('click', () => sendMessage(chip.textContent));
-      });
+      document.querySelectorAll('.ama-chip').forEach((chip) => chip.addEventListener('click', () => sendMessage(chip.textContent)));
 
-      // --- Boot the MIAW client (hidden chrome, auto-launched, filling the middle band).
+      /* ---------- Boot MIAW ---------- */
       window.initEmbeddedMessaging = function () {
         try {
           embeddedservice_bootstrap.settings.language = lang;
@@ -181,17 +227,17 @@
 
           window.addEventListener('onEmbeddedMessagingReady', () => {
             try {
-              embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({
-                EndUserLanguage: embeddedservice_bootstrap.settings.language
-              });
-            } catch (e) { /* prechat optional */ }
+              embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({ EndUserLanguage: embeddedservice_bootstrap.settings.language });
+            } catch (e) {}
             if (embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
               embeddedservice_bootstrap.utilAPI.launchChat().catch((e) => console.error('launchChat failed:', e));
             }
+            // Re-apply styling as the widget renders / re-renders.
+            for (const t of [300, 800, 1500, 3000, 5000]) setTimeout(applyAll, t);
+            const mo = new MutationObserver(() => applyAll());
+            mo.observe(document.body, { childList: true, subtree: true });
           });
-        } catch (err) {
-          console.error('Error loading Embedded Messaging: ', err);
-        }
+        } catch (err) { console.error('Error loading Embedded Messaging: ', err); }
       };
 
       const s = document.createElement('script');
