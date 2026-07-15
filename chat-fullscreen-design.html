@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Design — Full-Window MIAW Wrapper (chat-fullscreen.html)</title>
+<style>
+  :root{
+    --blue:#3b39c4; --ink:#1b1b2b; --muted:#5b5b70; --bg:#f6f7fb; --card:#fff;
+    --line:#e5e6ef; --ok:#0aa06e; --warn:#c77700; --bad:#d0342c; --code:#0d1020;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{background:linear-gradient(135deg,var(--blue),#6a52ff);color:#fff;padding:40px 24px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  header h1{margin:0 0 6px;font-size:2rem;font-style:italic}
+  header p{margin:0;opacity:.92}
+  .pill{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:2px 12px;font-size:.8rem;margin-top:10px}
+  section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:22px 0;box-shadow:0 1px 3px rgba(20,20,50,.05)}
+  h2{margin:0 0 4px;font-size:1.3rem;color:var(--blue)}
+  h2 .n{display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;align-items:center;justify-content:center;font-size:.95rem;margin-right:10px;vertical-align:middle}
+  h3{margin:20px 0 6px;font-size:1.02rem}
+  .sub{color:var(--muted);margin:0 0 14px}
+  code{background:#eef0f7;border-radius:5px;padding:1px 6px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
+  pre{background:var(--code);color:#e6e8f2;border-radius:10px;padding:14px 16px;overflow:auto;font-size:13px;line-height:1.5}
+  pre .c{color:#8b93b8}.pre .k{color:#c792ea}
+  table{width:100%;border-collapse:collapse;margin:8px 0}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;font-size:.92rem}
+  th{background:#f0f1f8}
+  .tag{display:inline-block;border-radius:6px;padding:1px 8px;font-size:.75rem;font-weight:600}
+  .t-ok{background:#e3f6ee;color:var(--ok)} .t-warn{background:#fdf0dc;color:var(--warn)} .t-bad{background:#fbe4e2;color:var(--bad)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .box{border:1px solid var(--line);border-radius:10px;padding:14px}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}
+  .step{background:#eef0ff;border:1px solid #d6d9ff;border-radius:8px;padding:6px 10px;font-size:.85rem}
+  .arrow{color:var(--muted)}
+  .callout{border-left:4px solid var(--warn);background:#fffaf0;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .callout.bad{border-color:var(--bad);background:#fff5f4}
+  .callout.ok{border-color:var(--ok);background:#f1fbf6}
+  .mini{font-size:.85rem;color:var(--muted)}
+  footer{color:var(--muted);text-align:center;padding:30px 0 50px;font-size:.85rem}
+  .diagram{border:1px dashed #c9cce6;border-radius:12px;padding:16px;background:#fbfbff}
+  .lyr{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:6px 0;background:#fff}
+  .lyr b{color:var(--blue)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Full-Window MIAW Wrapper — Design</h1>
+    <p>How <code>chat-fullscreen.html</code> embeds Messaging for In-App &amp; Web (Agentforce “Iris”) as a full-window experience on a 3rd-party site.</p>
+    <span class="pill">Goals: resize chat window · custom bottom editor box · quit button</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2>Overview</h2>
+    <p class="sub">A standalone page hosts the standard MIAW Enhanced Web Chat bootstrap and wraps it with custom chrome. The home page (<code>index.html</code>) shows two launcher buttons that navigate here per environment.</p>
+    <div class="diagram">
+      <div class="lyr"><b>index.html</b> — floating launcher buttons → <code>chat-fullscreen.html?org=staging</code> (blue, right) &amp; <code>?org=agentuat</code> (green, left)</div>
+      <div class="lyr"><b>chat-fullscreen.html</b> — custom title + close ✕ · <b>#embeddedMessagingFrame</b> (cross-origin MIAW iframe, resized) · custom bottom editor (input + Send + Quit + chips)</div>
+      <div class="lyr mini">The MIAW conversation UI lives inside a <b>cross-origin iframe</b> served from <code>onlocationexp--&lt;env&gt;.sandbox.my.site.com</code>. The host page can position/size the iframe and call the bootstrap SDK, but cannot reach inside it.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">1</span>Resize the chat window</h2>
+    <p class="sub">Make the widget fill the band between the custom title and the bottom editor, instead of the default docked bubble.</p>
+    <h3>Key facts</h3>
+    <ul>
+      <li>The widget is the cross-origin iframe <code>#embeddedMessagingFrame</code> (class <code>embeddedMessagingFrame maximized</code>).</li>
+      <li>We can style the <em>iframe element</em> from the host (it lives in the light DOM), but not its contents.</li>
+      <li><span class="tag t-bad">gotcha</span> An iframe needs an <b>explicit height</b> — <code>height:auto</code> collapses it (this was the original “too small” bug).</li>
+      <li>Launch must happen on <code>onEmbeddedMessagingButtonCreated</code>, not <code>onEmbeddedMessagingReady</code>.</li>
+      <li>The widget re-renders, so styling is re-applied via a <code>MutationObserver</code> + timed retries.</li>
+    </ul>
+    <pre><span class="c">// Resize the iframe to fill the band (position + EXPLICIT height)</span>
+function sizeContainer() {
+  const el = document.getElementById('embeddedMessagingFrame');
+  if (!el) return;
+  const TOP = 84;                                  <span class="c">// title bar height</span>
+  const barHidden = document.querySelector('.ama-bottom').classList.contains('ama-hidden');
+  const BAND_BOTTOM = barHidden ? 24 : 162;        <span class="c">// reserve space only when the editor is shown</span>
+  const CLIP = barHidden ? 0 : NATIVE_INPUT_CLIP;  <span class="c">// see section 3</span>
+  const st = el.style;
+  st.setProperty('position','fixed','important');
+  st.setProperty('top', TOP+'px','important');
+  st.setProperty('left','50%','important');
+  st.setProperty('transform','translateX(-50%)','important');
+  st.setProperty('width','min(1200px, 92vw)','important');
+  st.setProperty('height','calc(100vh - '+TOP+'px - '+BAND_BOTTOM+'px + '+CLIP+'px)','important');
+  st.setProperty('border-radius','14px','important');
+}</pre>
+    <pre><span class="c">// Launch on the correct event; re-apply styling as the widget renders</span>
+window.addEventListener('onEmbeddedMessagingButtonCreated', () =&gt;
+  embeddedservice_bootstrap.utilAPI.launchChat());
+window.addEventListener('onEmbeddedMessagingReady', () =&gt; {
+  [300,800,1500,3000,5000,8000].forEach(t =&gt; setTimeout(applyAll, t));
+  new MutationObserver(applyAll).observe(document.body,{childList:true,subtree:true});
+});</pre>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span>Custom bottom editor box</h2>
+    <p class="sub">A branded input pill (+ Send, Quit, quick-reply chips) that appears <b>only after a conversation is created</b>.</p>
+    <h3>Show only after the conversation exists</h3>
+    <p>The bar starts hidden (<code>.ama-bottom.ama-hidden</code>) so the prechat form / <em>Start Conversation</em> button is unobstructed. MIAW lifecycle events toggle it:</p>
+    <pre>window.addEventListener('onEmbeddedMessagingConversationStarted', showBottom); <span class="c">// new convo</span>
+window.addEventListener('onEmbeddedMessagingConversationOpened',  showBottom); <span class="c">// returning session</span>
+window.addEventListener('onEmbeddedMessagingConversationClosed',  hideBottom);
+window.addEventListener('onEmbeddedMessagingWindowClosed',        hideBottom);
+
+function showBottom(){ bottomBar.classList.remove('ama-hidden'); sizeContainer(); input.focus(); }
+function hideBottom(){ bottomBar.classList.add('ama-hidden');    sizeContainer(); }</pre>
+    <h3>Send a message</h3>
+    <pre>function sendMessage(text){
+  const msg = (text ?? input.value).trim(); if(!msg) return;
+  const api = window.embeddedservice_bootstrap?.utilAPI;
+  if (api &amp;&amp; typeof api.sendTextMessage === 'function') api.sendTextMessage(msg);
+  else console.warn('sendTextMessage not available in this release');
+  input.value = '';
+}
+<span class="c">// Send button, Enter key, and each chip all call sendMessage()</span></pre>
+    <div class="callout"><b>Caveat — <code>sendTextMessage</code>:</b> it is documented for Custom Lightning Type components (<code>configuration.util.sendTextMessage</code>), and is <b>not listed</b> in the host <code>utilAPI</code> reference. It works in some ECv2 field builds from the host. If it is unavailable, a host-side custom input cannot push messages into the cross-origin frame — the fallback is same-origin hosting or a headless build.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span>Hide the widget’s native input (during conversation only)</h2>
+    <p class="sub">The iframe is cross-origin, so its native “Type your message…” input can’t be hidden from inside. Instead we <b>clip the bottom strip of the iframe</b> — but only while a conversation is live.</p>
+    <table>
+      <tr><th>Phase</th><th>Custom editor</th><th>Clip</th><th>Why</th></tr>
+      <tr><td>Prechat</td><td><span class="tag t-bad">hidden</span></td><td>none</td><td>keep <em>Start Conversation</em> button usable (it sits in the same bottom region)</td></tr>
+      <tr><td>Conversation</td><td><span class="tag t-ok">shown</span></td><td><code>inset(0 0 88px 0)</code></td><td>clip the native input strip so only the custom editor is visible</td></tr>
+    </table>
+    <pre><span class="c">// Grow the iframe by the clip amount, then clip that strip off the bottom</span>
+st.setProperty('height','calc(100vh - 84px - '+BAND_BOTTOM+'px + '+CLIP+'px)','important');
+st.setProperty('clip-path', CLIP ? 'inset(0 0 '+CLIP+'px 0 round 14px)' : 'none', 'important');
+<span class="c">// NATIVE_INPUT_CLIP = 88 (tunable)</span></pre>
+    <div class="callout bad"><b>Why clipping is conditional:</b> an earlier version clipped the bottom unconditionally and accidentally hid the prechat <em>Start Conversation</em> button. Clipping is now applied <b>only</b> after <code>onEmbeddedMessagingConversationStarted</code>.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">4</span>Quit button</h2>
+    <p class="sub">Ends the session and returns to the home page — next to Send in the editor, plus the top-right ✕.</p>
+    <pre>function closeSession(){
+  const done = () =&gt; { window.location.href = 'index.html'; };
+  const b = window.embeddedservice_bootstrap;
+  if (b?.userVerificationAPI?.clearSession)
+    b.userVerificationAPI.clearSession(true)
+      .then(() =&gt; b.utilAPI?.removeAllComponents?.())
+      .finally(done);
+  else { b?.utilAPI?.removeAllComponents?.(); done(); }
+}
+amaQuit.addEventListener('click', closeSession);   <span class="c">// red Quit button, beside Send</span>
+amaClose.addEventListener('click', closeSession);  <span class="c">// top-right ✕</span></pre>
+    <p class="mini">Uses the documented teardown: <code>userVerificationAPI.clearSession(true)</code> → <code>utilAPI.removeAllComponents()</code>.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">5</span>Environment switching &amp; home-page launchers</h2>
+    <div class="grid">
+      <div class="box">
+        <h3>Org parameter</h3>
+        <p class="mini"><code>chat-fullscreen.html?org=staging|agentuat</code> selects the deployment.</p>
+        <pre>const ORGS = {
+  staging:  { orgId:'00DV9000004uKg5', deploymentName:'Agentforce_Iris',
+              siteUrl:'…--staging…/ESWAgentforceIris…', scrt2URL:'…staging…-scrt.com' },
+  agentuat: { orgId:'00DV9000006H5fl', deploymentName:'Agentforce_Iris',
+              siteUrl:'…--agentuat…/ESWAgentforceIris…', scrt2URL:'…agentuat…-scrt.com' }
+};
+const cfg = ORGS[params.get('org')] || ORGS.staging;</pre>
+      </div>
+      <div class="box">
+        <h3>Launchers on index.html</h3>
+        <p class="mini">Two floating buttons navigate here (the cross-origin bubble can’t be click-intercepted, so launchers replace the embedded widgets).</p>
+        <pre>&lt;a href="chat-fullscreen.html?org=staging&amp;lang=en_US"&gt;💬&lt;/a&gt;  <span class="c">// blue, bottom-right</span>
+&lt;a href="chat-fullscreen.html?org=agentuat&amp;lang=en_US"&gt;💬&lt;/a&gt; <span class="c">// green, bottom-left</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>End-to-end lifecycle</h2>
+    <div class="flow">
+      <span class="step">Load page (<code>?org</code>)</span><span class="arrow">→</span>
+      <span class="step">bootstrap.min.js</span><span class="arrow">→</span>
+      <span class="step">ButtonCreated → launchChat()</span><span class="arrow">→</span>
+      <span class="step">Ready → observe + size</span>
+    </div>
+    <div class="flow">
+      <span class="step">Prechat form (editor hidden, no clip)</span><span class="arrow">→</span>
+      <span class="step"><b>Start Conversation</b></span><span class="arrow">→</span>
+      <span class="step">ConversationStarted → show editor + clip native input</span><span class="arrow">→</span>
+      <span class="step">Chat via custom editor</span><span class="arrow">→</span>
+      <span class="step">Quit / ✕ → clearSession → index.html</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Constraints &amp; known limits</h2>
+    <table>
+      <tr><th>Item</th><th>Status</th><th>Note</th></tr>
+      <tr><td>Resize widget</td><td><span class="tag t-ok">works</span></td><td>iframe element is host-controllable; needs explicit height</td></tr>
+      <tr><td>Editor shown after conversation</td><td><span class="tag t-ok">works</span></td><td>driven by <code>onEmbeddedMessagingConversationStarted/Opened</code></td></tr>
+      <tr><td>Quit / close session</td><td><span class="tag t-ok">works</span></td><td>documented <code>clearSession</code> + <code>removeAllComponents</code></td></tr>
+      <tr><td>Hide native input</td><td><span class="tag t-warn">via clip</span></td><td>cross-origin: cannot hide inside the frame; clipped from host, conversation-phase only</td></tr>
+      <tr><td>Custom input → send</td><td><span class="tag t-warn">needs verify</span></td><td><code>sendTextMessage</code> under-documented at host level; verify per release</td></tr>
+      <tr><td>Custom UI inside the chat (input CLT)</td><td><span class="tag t-bad">blocked</span></td><td>W-22250928 / W-22569006 — input CLTs render as plain text over ECv2 for script agents</td></tr>
+    </table>
+    <div class="callout ok"><b>If a fully custom input is required:</b> host this page on the <b>same <code>…my.site.com</code> domain</b> as the widget (same-origin unlocks reaching into the frame), or go <b>headless</b> (custom UI + conversation/Agent APIs).</div>
+  </section>
+
+  <section>
+    <h2>Files</h2>
+    <table>
+      <tr><th>File</th><th>Role</th></tr>
+      <tr><td><code>chat-fullscreen.html</code></td><td>Full-window MIAW wrapper: resize, editor, quit, clip, org switch, lifecycle</td></tr>
+      <tr><td><code>index.html</code></td><td>Home page + “Ask Iris” nav tab + two launcher buttons</td></tr>
+      <tr><td><code>embedded-chat.html</code></td><td>Original docked-widget embed (per-org), still available</td></tr>
+    </table>
+  </section>
+
+</div>
+<footer>Design reference · dummyFifa2026 · MIAW (Agentforce Iris) full-window wrapper</footer>
+</body>
+</html>
