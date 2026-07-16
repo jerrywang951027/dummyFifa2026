@@ -17,7 +17,7 @@
   header p{margin:0;opacity:.92}
   .pill{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:2px 12px;font-size:.8rem;margin-top:10px}
   section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:22px 0;box-shadow:0 1px 3px rgba(20,20,50,.05)}
-  h2{margin:0 0 4px;font-size:1.3rem;color:var(--blue)}
+  h2{margin:0 0 4px;font-size:1.3rem;color:var(--blue);scroll-margin-top:16px}
   h2 .n{display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;align-items:center;justify-content:center;font-size:.95rem;margin-right:10px;vertical-align:middle}
   h3{margin:20px 0 6px;font-size:1.02rem}
   .sub{color:var(--muted);margin:0 0 14px}
@@ -38,53 +38,170 @@
   .callout{border-left:4px solid var(--warn);background:#fffaf0;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
   .callout.bad{border-color:var(--bad);background:#fff5f4}
   .callout.ok{border-color:var(--ok);background:#f1fbf6}
+  .callout.info{border-color:var(--blue);background:#f2f3ff}
   .mini{font-size:.85rem;color:var(--muted)}
   footer{color:var(--muted);text-align:center;padding:30px 0 50px;font-size:.85rem}
   .diagram{border:1px dashed #c9cce6;border-radius:12px;padding:16px;background:#fbfbff}
   .lyr{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:6px 0;background:#fff}
   .lyr b{color:var(--blue)}
+  .toc{columns:2;gap:24px;margin:6px 0 0;padding-left:18px}
+  @media(max-width:720px){.toc{columns:1}}
+  .toc a{color:var(--blue);text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#eef0f7;border:1px solid #d6d9ea;border-bottom-width:2px;border-radius:5px;padding:0 6px;font-size:.85em}
+  dl.gloss dt{font-weight:700;color:var(--blue);margin-top:10px}
+  dl.gloss dd{margin:2px 0 0}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap">
     <h1>Full-Window MIAW Wrapper — Design</h1>
-    <p>How <code>chat-fullscreen.html</code> embeds Messaging for In-App &amp; Web (Agentforce “Iris”) as a full-window experience on a 3rd-party site.</p>
-    <span class="pill">Goals: resize chat window · custom bottom editor box · quit button</span>
+    <p>How <code>chat-fullscreen.html</code> embeds Messaging for In-App &amp; Web (Agentforce “Iris”) as a full-window experience on a 3rd-party static site.</p>
+    <span class="pill">Goals: resize chat window · custom bottom editor box · quit button · multi-env</span>
   </div>
 </header>
 
 <div class="wrap">
 
-  <section>
-    <h2>Overview</h2>
-    <p class="sub">A standalone page hosts the standard MIAW Enhanced Web Chat bootstrap and wraps it with custom chrome. The home page (<code>index.html</code>) shows two launcher buttons that navigate here per environment.</p>
-    <div class="diagram">
-      <div class="lyr"><b>index.html</b> — floating launcher buttons → <code>chat-fullscreen.html?org=staging</code> (blue, right) &amp; <code>?org=agentuat</code> (green, left)</div>
-      <div class="lyr"><b>chat-fullscreen.html</b> — custom title + close ✕ · <b>#embeddedMessagingFrame</b> (cross-origin MIAW iframe, resized) · custom bottom editor (input + Send + Quit + chips)</div>
-      <div class="lyr mini">The MIAW conversation UI lives inside a <b>cross-origin iframe</b> served from <code>onlocationexp--&lt;env&gt;.sandbox.my.site.com</code>. The host page can position/size the iframe and call the bootstrap SDK, but cannot reach inside it.</div>
+  <!-- ============================= ORIENTATION ============================= -->
+  <section id="tldr">
+    <h2>Start here (TL;DR)</h2>
+    <p class="sub">Read this before touching <code>chat-fullscreen.html</code>. It explains <b>why</b> the code looks the way it does — most of the oddities exist to work <em>around</em> a cross-origin iframe we do not control.</p>
+    <div class="callout info">
+      <b>The one thing to internalise:</b> the actual chat UI (message bubbles, prechat form, the native “Type your message…” box, the post-chat survey) is rendered by Salesforce inside a
+      <b>cross-origin <code>&lt;iframe&gt;</code></b> served from <code>onlocationexp--&lt;env&gt;.sandbox.my.site.com</code>.
+      From our host page we can <b>only</b>: (1) position/size the <em>iframe element</em>, (2) call the Salesforce bootstrap JS SDK (<code>embeddedservice_bootstrap.*</code>), and (3) listen to the <code>onEmbeddedMessaging*</code> window events.
+      We <b>cannot</b> read or edit anything <em>inside</em> the iframe (its DOM, its shadow roots, its inputs). Every design decision below follows from that boundary.
     </div>
+    <h3>What this page delivers</h3>
+    <ol>
+      <li>A full-window chat (not the small docked bubble) — <a href="#s1">§1 Resize</a>.</li>
+      <li>A branded bottom editor bar (input + Send + Quit + quick-reply chips) that appears only mid-conversation — <a href="#s2">§2 Editor</a>.</li>
+      <li>Hiding the widget’s own input strip during a live chat — <a href="#s3">§3 Clip</a>.</li>
+      <li>A Quit control that ends the session and returns home — <a href="#s4">§4 Quit</a>.</li>
+      <li>Per-environment config via a <code>?org=</code> URL parameter — <a href="#s5">§5 Environments</a>.</li>
+    </ol>
+    <h3>Contents</h3>
+    <ul class="toc">
+      <li><a href="#overview">Overview &amp; architecture</a></li>
+      <li><a href="#config">Configuration reference (URL params)</a></li>
+      <li><a href="#boot">Bootstrapping sequence</a></li>
+      <li><a href="#s1">1 · Resize the chat window</a></li>
+      <li><a href="#s2">2 · Custom bottom editor box</a></li>
+      <li><a href="#s3">3 · Hide the native input (clip)</a></li>
+      <li><a href="#s4">4 · Quit button</a></li>
+      <li><a href="#prechat">Prechat form &amp; hidden fields</a></li>
+      <li><a href="#survey">Post-chat survey</a></li>
+      <li><a href="#events">MIAW lifecycle events</a></li>
+      <li><a href="#lifecycle">End-to-end lifecycle</a></li>
+      <li><a href="#s5">5 · Environments &amp; launchers</a></li>
+      <li><a href="#testing">Local testing &amp; automation</a></li>
+      <li><a href="#trouble">Troubleshooting</a></li>
+      <li><a href="#limits">Constraints &amp; known limits</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+      <li><a href="#files">Files</a></li>
+    </ul>
   </section>
 
-  <section>
+  <!-- ============================= OVERVIEW ============================= -->
+  <section id="overview">
+    <h2>Overview &amp; architecture</h2>
+    <p class="sub">A standalone page hosts the standard MIAW Enhanced Web Chat (“ECv2”) bootstrap and wraps it with custom chrome. The home page (<code>index.html</code>) shows floating launcher buttons that navigate here, one per environment.</p>
+    <div class="diagram">
+      <div class="lyr"><b>index.html</b> (origin: <code>jerrywang951027.github.io</code>) — floating launcher buttons → <code>chat-fullscreen.html?org=staging</code> (blue, bottom-right) &amp; <code>?org=agentuat</code> (green, bottom-left)</div>
+      <div class="lyr"><b>chat-fullscreen.html</b> (same origin) — our custom chrome:
+        <br>• <code>.ama-top</code> — custom title “Ask me anything” + close ✕ (<code>#amaClose</code>)
+        <br>• <b><code>#embeddedMessagingFrame</code></b> — the cross-origin MIAW iframe, which <em>we resize/position but never enter</em>
+        <br>• <code>.ama-bottom</code> — custom editor: <code>#amaInput</code> + Send (<code>#amaSend</code>) + Quit (<code>#amaQuit</code>) + quick-reply chips (<code>.ama-chip</code>)
+      </div>
+      <div class="lyr mini"><b>Cross-origin boundary ⟶</b> the MIAW conversation UI is served from <code>https://onlocationexp--&lt;env&gt;.sandbox.my.site.com/ESWAgentforceIris…</code>.
+      The bootstrap script (<code>bootstrap.min.js</code>) is loaded from that same site. It creates the iframe and exposes <code>window.embeddedservice_bootstrap</code> on <em>our</em> page as the only bridge into the widget.</div>
+    </div>
+    <div class="callout"><b>Same-origin escape hatch:</b> If a requirement ever needs true DOM access into the widget (e.g. fully replacing the input), host this page on the <b>same <code>…my.site.com</code> domain</b> as the deployment, or drop the iframe entirely and build a <b>headless</b> client against the Messaging / Agent APIs. See <a href="#limits">Constraints</a>.</div>
+  </section>
+
+  <!-- ============================= CONFIG ============================= -->
+  <section id="config">
+    <h2>Configuration reference (URL parameters)</h2>
+    <p class="sub">All runtime behaviour is driven by query-string parameters on <code>chat-fullscreen.html</code>.</p>
+    <table>
+      <tr><th>Param</th><th>Values</th><th>Default</th><th>Effect</th></tr>
+      <tr><td><code>org</code></td><td><code>staging</code> · <code>agentuat</code></td><td><code>staging</code></td><td>Selects the deployment config from the <code>ORGS</code> map (orgId, deploymentName, siteUrl, scrt2URL). Any unknown value falls back to <code>staging</code>.</td></tr>
+      <tr><td><code>lang</code></td><td>Salesforce locale, e.g. <code>en_US</code>, <code>es</code>, <code>fr</code></td><td><code>en_US</code></td><td>Sets <code>embeddedservice_bootstrap.settings.language</code> <em>and</em> is pushed into the hidden prechat field <code>EndUserLanguage</code> (see <a href="#prechat">Prechat</a>).</td></tr>
+      <tr><td><code>debug</code></td><td><code>1</code></td><td>off</td><td>Enables <code>dumpShadow()</code> — logs the widget’s shadow-DOM structure to the console and stores it at <code>window.__amaShadowDump</code>. See <a href="#testing">Testing</a>.</td></tr>
+    </table>
+    <p class="mini">Example: <code>chat-fullscreen.html?org=agentuat&amp;lang=en_US&amp;debug=1</code></p>
+    <h3>The <code>ORGS</code> map (source of truth for environments)</h3>
+    <pre>const ORGS = {
+  staging:  { orgId:'00DV9000004uKg5', deploymentName:'Agentforce_Iris',
+              siteUrl:'https://onlocationexp--staging.sandbox.my.site.com/ESWAgentforceIris1778055798781',
+              scrt2URL:'https://onlocationexp--staging.sandbox.my.salesforce-scrt.com' },
+  agentuat: { orgId:'00DV9000006H5fl', deploymentName:'Agentforce_Iris',
+              siteUrl:'https://onlocationexp--agentuat.sandbox.my.site.com/ESWAgentforceIris1778055798781',
+              scrt2URL:'https://onlocationexp--agentuat.sandbox.my.salesforce-scrt.com' }
+};
+const cfg = ORGS[params.get('org')] || ORGS.staging;</pre>
+    <table>
+      <tr><th>Field</th><th>What it is / where to find it in Setup</th></tr>
+      <tr><td><code>orgId</code></td><td>18-char Org Id of the sandbox. Company Information in Setup.</td></tr>
+      <tr><td><code>deploymentName</code></td><td>The Embedded Service Deployment API/developer name (here, <code>Agentforce_Iris</code>). Setup → Embedded Service Deployments.</td></tr>
+      <tr><td><code>siteUrl</code></td><td>The Experience/Site base URL that hosts the ECv2 assets (<code>/ESWAgentforceIris…</code>). This is where <code>bootstrap.min.js</code> is fetched from.</td></tr>
+      <tr><td><code>scrt2URL</code></td><td>The Salesforce real-time (SCRT2) messaging endpoint for the org. Passed to <code>init()</code> as <code>{ scrt2URL }</code>.</td></tr>
+    </table>
+    <div class="callout"><b>Adding an environment</b> = add one entry to <code>ORGS</code> and (optionally) a launcher link in <code>index.html</code>. The four values all come from the target org’s Embedded Service Deployment. Note: <code>embedded-chat.html</code> historically also referenced a <code>surveyclt</code> env; <code>chat-fullscreen.html</code> currently wires only <code>staging</code> and <code>agentuat</code>.</div>
+  </section>
+
+  <!-- ============================= BOOT ============================= -->
+  <section id="boot">
+    <h2>Bootstrapping sequence</h2>
+    <p class="sub">How the page goes from “blank” to “live chat”. Order matters — calling the wrong API on the wrong event is the classic failure.</p>
+    <pre><span class="c">// 1. Inject the deployment's bootstrap script, then init on load</span>
+const s = document.createElement('script');
+s.src = cfg.siteUrl + '/assets/js/bootstrap.min.js';
+s.onload = window.initEmbeddedMessaging;      <span class="c">// defined below</span>
+document.head.appendChild(s);
+
+window.initEmbeddedMessaging = function () {
+  embeddedservice_bootstrap.settings.language = lang;                         <span class="c">// 2. locale</span>
+  embeddedservice_bootstrap.init(cfg.orgId, cfg.deploymentName, cfg.siteUrl,  <span class="c">// 3. boot</span>
+    { scrt2URL: cfg.scrt2URL });
+
+  <span class="c">// 4. launchChat() MUST be called on ButtonCreated (NOT onReady)</span>
+  window.addEventListener('onEmbeddedMessagingButtonCreated', () =&gt;
+    embeddedservice_bootstrap.utilAPI.launchChat());
+
+  <span class="c">// 5. once ready: set hidden prechat fields + start re-styling the iframe</span>
+  window.addEventListener('onEmbeddedMessagingReady', () =&gt; {
+    embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({ EndUserLanguage: lang });
+    [300,800,1500,3000,5000,8000].forEach(t =&gt; setTimeout(applyAll, t));      <span class="c">// timed retries</span>
+    new MutationObserver(applyAll).observe(document.body,{childList:true,subtree:true});
+  });
+};</pre>
+    <div class="callout bad"><b>Gotcha — launch timing:</b> <code>launchChat()</code> only succeeds after <code>onEmbeddedMessagingButtonCreated</code>. Calling it on <code>onEmbeddedMessagingReady</code> (or immediately after <code>init</code>) silently no-ops.</div>
+    <div class="callout"><b>Why the timed retries + MutationObserver:</b> the widget re-renders itself several times as it loads and as the conversation state changes. Our sizing (<code>applyAll → sizeContainer</code>) must be re-applied after each re-render, so we hook a <code>MutationObserver</code> and also fire a few one-off <code>setTimeout</code>s to catch the early renders before the observer is attached.</div>
+  </section>
+
+  <!-- ============================= §1 RESIZE ============================= -->
+  <section id="s1">
     <h2><span class="n">1</span>Resize the chat window</h2>
     <p class="sub">Make the widget fill the band between the custom title and the bottom editor, instead of the default docked bubble.</p>
     <h3>Key facts</h3>
     <ul>
-      <li>The widget is the cross-origin iframe <code>#embeddedMessagingFrame</code> (class <code>embeddedMessagingFrame maximized</code>).</li>
-      <li>We can style the <em>iframe element</em> from the host (it lives in the light DOM), but not its contents.</li>
+      <li>The widget is the cross-origin iframe <code>#embeddedMessagingFrame</code> (Salesforce adds classes like <code>embeddedMessagingFrame maximized</code>).</li>
+      <li>We can style the <em>iframe element</em> from the host (it lives in our light DOM), but not its contents.</li>
       <li><span class="tag t-bad">gotcha</span> An iframe needs an <b>explicit height</b> — <code>height:auto</code> collapses it (this was the original “too small” bug).</li>
-      <li>Launch must happen on <code>onEmbeddedMessagingButtonCreated</code>, not <code>onEmbeddedMessagingReady</code>.</li>
-      <li>The widget re-renders, so styling is re-applied via a <code>MutationObserver</code> + timed retries.</li>
+      <li>All properties are set with <code>!important</code> because the widget’s own stylesheet is aggressive.</li>
+      <li>The iframe is horizontally centered with <code>left:50% + translateX(-50%)</code> and capped at <code>min(1200px, 92vw)</code>.</li>
     </ul>
     <pre><span class="c">// Resize the iframe to fill the band (position + EXPLICIT height)</span>
 function sizeContainer() {
   const el = document.getElementById('embeddedMessagingFrame');
   if (!el) return;
-  const TOP = 84;                                  <span class="c">// title bar height</span>
+  const TOP = 84;                                  <span class="c">// space reserved for the custom title bar</span>
   const barHidden = document.querySelector('.ama-bottom').classList.contains('ama-hidden');
   const BAND_BOTTOM = barHidden ? 24 : 162;        <span class="c">// reserve space only when the editor is shown</span>
-  const CLIP = barHidden ? 0 : NATIVE_INPUT_CLIP;  <span class="c">// see section 3</span>
+  const CLIP = barHidden ? 0 : NATIVE_INPUT_CLIP;  <span class="c">// see §3 (NATIVE_INPUT_CLIP = 88)</span>
   const st = el.style;
   st.setProperty('position','fixed','important');
   st.setProperty('top', TOP+'px','important');
@@ -93,22 +210,18 @@ function sizeContainer() {
   st.setProperty('width','min(1200px, 92vw)','important');
   st.setProperty('height','calc(100vh - '+TOP+'px - '+BAND_BOTTOM+'px + '+CLIP+'px)','important');
   st.setProperty('border-radius','14px','important');
+  st.setProperty('clip-path', CLIP ? 'inset(0 0 '+CLIP+'px 0 round 14px)' : 'none','important');
 }</pre>
-    <pre><span class="c">// Launch on the correct event; re-apply styling as the widget renders</span>
-window.addEventListener('onEmbeddedMessagingButtonCreated', () =&gt;
-  embeddedservice_bootstrap.utilAPI.launchChat());
-window.addEventListener('onEmbeddedMessagingReady', () =&gt; {
-  [300,800,1500,3000,5000,8000].forEach(t =&gt; setTimeout(applyAll, t));
-  new MutationObserver(applyAll).observe(document.body,{childList:true,subtree:true});
-});</pre>
+    <p class="mini">Height math: total viewport height, minus the title band (<code>TOP</code>), minus the bottom band (<code>BAND_BOTTOM</code>), <b>plus</b> the clip amount (<code>CLIP</code>) so the visible area still fills the band after the bottom strip is clipped off (see §3).</p>
   </section>
 
-  <section>
+  <!-- ============================= §2 EDITOR ============================= -->
+  <section id="s2">
     <h2><span class="n">2</span>Custom bottom editor box</h2>
     <p class="sub">A branded input pill (+ Send, Quit, quick-reply chips) that appears <b>only after a conversation is created</b>.</p>
     <h3>Show only after the conversation exists</h3>
     <p>The bar starts hidden (<code>.ama-bottom.ama-hidden</code>) so the prechat form / <em>Start Conversation</em> button is unobstructed. MIAW lifecycle events toggle it:</p>
-    <pre>window.addEventListener('onEmbeddedMessagingConversationStarted', showBottom); <span class="c">// new convo</span>
+    <pre>window.addEventListener('onEmbeddedMessagingConversationStarted', showBottom); <span class="c">// brand-new convo</span>
 window.addEventListener('onEmbeddedMessagingConversationOpened',  showBottom); <span class="c">// returning session</span>
 window.addEventListener('onEmbeddedMessagingConversationClosed',  hideBottom);
 window.addEventListener('onEmbeddedMessagingWindowClosed',        hideBottom);
@@ -123,13 +236,14 @@ function hideBottom(){ bottomBar.classList.add('ama-hidden');    sizeContainer()
   else console.warn('sendTextMessage not available in this release');
   input.value = '';
 }
-<span class="c">// Send button, Enter key, and each chip all call sendMessage()</span></pre>
-    <div class="callout"><b>Caveat — <code>sendTextMessage</code>:</b> it is documented for Custom Lightning Type components (<code>configuration.util.sendTextMessage</code>), and is <b>not listed</b> in the host <code>utilAPI</code> reference. It works in some ECv2 field builds from the host. If it is unavailable, a host-side custom input cannot push messages into the cross-origin frame — the fallback is same-origin hosting or a headless build.</div>
+<span class="c">// The Send button (#amaSend), the Enter key on #amaInput, and each chip (.ama-chip) all call sendMessage()</span></pre>
+    <div class="callout"><b>Caveat — <code>sendTextMessage</code>:</b> it is documented for Custom Lightning Type components (<code>configuration.util.sendTextMessage</code>), and is <b>not listed</b> in the host <code>utilAPI</code> reference. It works in the current ECv2 field build from the host (verified live), but is not contractually guaranteed. If a future release drops it, a host-side custom input can no longer push messages into the cross-origin frame — fall back to same-origin hosting or a headless build (see <a href="#limits">Constraints</a>).</div>
   </section>
 
-  <section>
+  <!-- ============================= §3 CLIP ============================= -->
+  <section id="s3">
     <h2><span class="n">3</span>Hide the widget’s native input (during conversation only)</h2>
-    <p class="sub">The iframe is cross-origin, so its native “Type your message…” input can’t be hidden from inside. Instead we <b>clip the bottom strip of the iframe</b> — but only while a conversation is live.</p>
+    <p class="sub">The iframe is cross-origin, so its native “Type your message…” input can’t be hidden from inside. Instead we <b>clip the bottom strip of the iframe element</b> — but only while a conversation is live.</p>
     <table>
       <tr><th>Phase</th><th>Custom editor</th><th>Clip</th><th>Why</th></tr>
       <tr><td>Prechat</td><td><span class="tag t-bad">hidden</span></td><td>none</td><td>keep <em>Start Conversation</em> button usable (it sits in the same bottom region)</td></tr>
@@ -138,68 +252,168 @@ function hideBottom(){ bottomBar.classList.add('ama-hidden');    sizeContainer()
     <pre><span class="c">// Grow the iframe by the clip amount, then clip that strip off the bottom</span>
 st.setProperty('height','calc(100vh - 84px - '+BAND_BOTTOM+'px + '+CLIP+'px)','important');
 st.setProperty('clip-path', CLIP ? 'inset(0 0 '+CLIP+'px 0 round 14px)' : 'none', 'important');
-<span class="c">// NATIVE_INPUT_CLIP = 88 (tunable)</span></pre>
+<span class="c">// NATIVE_INPUT_CLIP = 88 (tunable — increase if the native strip is taller in a future release)</span></pre>
     <div class="callout bad"><b>Why clipping is conditional:</b> an earlier version clipped the bottom unconditionally and accidentally hid the prechat <em>Start Conversation</em> button. Clipping is now applied <b>only</b> after <code>onEmbeddedMessagingConversationStarted</code>.</div>
+    <div class="callout"><b>Dead code you’ll see (safe to ignore / remove):</b> the file defines <code>INJECT_CSS = "textarea{display:none}"</code> and <code>injectInto()</code> as a "conservative first pass" to hide the native input by injecting CSS into shadow roots. <b>These are never called</b> — they cannot reach a <em>cross-origin</em> iframe anyway. The working mechanism is the <code>clip-path</code> above. <code>walkShadowRoots()</code> survives only because <code>dumpShadow()</code> (debug) uses it.</div>
   </section>
 
-  <section>
+  <!-- ============================= §4 QUIT ============================= -->
+  <section id="s4">
     <h2><span class="n">4</span>Quit button</h2>
-    <p class="sub">Ends the session and returns to the home page — next to Send in the editor, plus the top-right ✕.</p>
+    <p class="sub">Ends the session and returns to the home page — the red Quit button (<code>#amaQuit</code>) beside Send, plus the top-right ✕ (<code>#amaClose</code>). Both call the same <code>closeSession()</code>.</p>
     <pre>function closeSession(){
   const done = () =&gt; { window.location.href = 'index.html'; };
   const b = window.embeddedservice_bootstrap;
   if (b?.userVerificationAPI?.clearSession)
-    b.userVerificationAPI.clearSession(true)
-      .then(() =&gt; b.utilAPI?.removeAllComponents?.())
-      .finally(done);
+    b.userVerificationAPI.clearSession(true)                 <span class="c">// clear verified/auth session</span>
+      .then(() =&gt; b.utilAPI?.removeAllComponents?.())        <span class="c">// tear down the widget DOM</span>
+      .finally(done);                                        <span class="c">// always navigate home</span>
   else { b?.utilAPI?.removeAllComponents?.(); done(); }
 }
 amaQuit.addEventListener('click', closeSession);   <span class="c">// red Quit button, beside Send</span>
 amaClose.addEventListener('click', closeSession);  <span class="c">// top-right ✕</span></pre>
-    <p class="mini">Uses the documented teardown: <code>userVerificationAPI.clearSession(true)</code> → <code>utilAPI.removeAllComponents()</code>.</p>
+    <p class="mini">Uses the documented teardown: <code>userVerificationAPI.clearSession(true)</code> → <code>utilAPI.removeAllComponents()</code>. <code>done()</code> runs in <code>finally</code> so a failed teardown still returns the user home.</p>
   </section>
 
-  <section>
-    <h2><span class="n">5</span>Environment switching &amp; home-page launchers</h2>
-    <div class="grid">
-      <div class="box">
-        <h3>Org parameter</h3>
-        <p class="mini"><code>chat-fullscreen.html?org=staging|agentuat</code> selects the deployment.</p>
-        <pre>const ORGS = {
-  staging:  { orgId:'00DV9000004uKg5', deploymentName:'Agentforce_Iris',
-              siteUrl:'…--staging…/ESWAgentforceIris…', scrt2URL:'…staging…-scrt.com' },
-  agentuat: { orgId:'00DV9000006H5fl', deploymentName:'Agentforce_Iris',
-              siteUrl:'…--agentuat…/ESWAgentforceIris…', scrt2URL:'…agentuat…-scrt.com' }
-};
-const cfg = ORGS[params.get('org')] || ORGS.staging;</pre>
-      </div>
-      <div class="box">
-        <h3>Launchers on index.html</h3>
-        <p class="mini">Two floating buttons navigate here (the cross-origin bubble can’t be click-intercepted, so launchers replace the embedded widgets).</p>
-        <pre>&lt;a href="chat-fullscreen.html?org=staging&amp;lang=en_US"&gt;💬&lt;/a&gt;  <span class="c">// blue, bottom-right</span>
-&lt;a href="chat-fullscreen.html?org=agentuat&amp;lang=en_US"&gt;💬&lt;/a&gt; <span class="c">// green, bottom-left</span></pre>
-      </div>
-    </div>
+  <!-- ============================= PRECHAT ============================= -->
+  <section id="prechat">
+    <h2>Prechat form &amp; hidden fields</h2>
+    <p class="sub">Before a conversation exists, the iframe renders the <b>prechat form</b>. Its fields are configured <b>server-side</b> in the Embedded Service Deployment — <em>not</em> in this repo — but they directly affect testing/automation, so they’re documented here.</p>
+    <h3>Visible fields (as currently configured)</h3>
+    <table>
+      <tr><th>Field</th><th>Input selector (inside the iframe)</th><th>Required?</th></tr>
+      <tr><td>First Name</td><td><code>input[name="_firstName"]</code></td><td><span class="tag t-ok">yes</span></td></tr>
+      <tr><td>Last Name</td><td><code>input[name="_lastName"]</code></td><td><span class="tag t-ok">yes</span></td></tr>
+      <tr><td>Email</td><td><code>input[name="_email"]</code> (<code>type=email</code>)</td><td><span class="tag t-ok">yes</span> — must be a valid email</td></tr>
+      <tr><td>Submit</td><td>button “Start Conversation”</td><td>—</td></tr>
+    </table>
+    <div class="callout"><b>Automation note:</b> all three fields are required — filling only the email will <b>not</b> start the conversation. The email field enforces <code>type=email</code> validation, so an invalid string (e.g. <code>e/e/foo@x.com</code>) is rejected on submit. Requiredness is a deployment setting and can change; re-check in Setup if the flow breaks.</div>
+    <h3>Hidden fields</h3>
+    <p>We push the active locale into a hidden prechat field so downstream automation/routing sees the user’s language:</p>
+    <pre>embeddedservice_bootstrap.prechatAPI.setHiddenPrechatFields({ EndUserLanguage: lang });</pre>
+    <p class="mini">For this to work, <code>EndUserLanguage</code> must exist as a hidden prechat field on the deployment. Add more hidden fields the same way (one object of <code>name:value</code> pairs).</p>
   </section>
 
-  <section>
+  <!-- ============================= SURVEY ============================= -->
+  <section id="survey">
+    <h2>Post-chat survey</h2>
+    <p class="sub">After the conversation winds down, the agent/flow presents a <b>“Quick Feedback”</b> survey <em>inside the iframe</em> (rendered by Salesforce, driven by the Agentforce flow — nothing in this repo controls it).</p>
+    <ul>
+      <li>It appears as an in-conversation message containing a heading (“Quick Feedback” / “please share your feedback…”), three 1–5 rating questions (satisfaction, resolution, overall experience), a free-text comment box, and a <b>Submit Feedback</b> button.</li>
+      <li>Because it is rendered inside the cross-origin frame, the host page cannot style, prefill, or submit it.</li>
+      <li>The survey is tall — the widget auto-scrolls to its bottom (Submit button) as it renders, so the heading/first question start off-screen. A viewer must scroll up within the chat to see the whole form.</li>
+    </ul>
+    <div class="callout info"><b>Where it comes from:</b> the survey is part of the Agentforce agent/flow configuration in the org, not the wrapper. To change its questions or trigger, edit the flow/agent in the target sandbox — not <code>chat-fullscreen.html</code>.</div>
+  </section>
+
+  <!-- ============================= EVENTS ============================= -->
+  <section id="events">
+    <h2>MIAW lifecycle events (the ones this page relies on)</h2>
+    <p class="sub">All are <code>window</code> events dispatched by the bootstrap SDK. Add listeners <em>inside</em> <code>initEmbeddedMessaging</code> after <code>init()</code>.</p>
+    <table>
+      <tr><th>Event</th><th>Fires when</th><th>We do</th></tr>
+      <tr><td><code>onEmbeddedMessagingButtonCreated</code></td><td>the launcher button has been created</td><td><b>call <code>launchChat()</code></b> (only valid here)</td></tr>
+      <tr><td><code>onEmbeddedMessagingReady</code></td><td>the SDK is initialised and APIs are usable</td><td>set hidden prechat fields; start sizing retries + MutationObserver</td></tr>
+      <tr><td><code>onEmbeddedMessagingConversationStarted</code></td><td>a brand-new conversation is created</td><td>show the custom editor + enable the native-input clip</td></tr>
+      <tr><td><code>onEmbeddedMessagingConversationOpened</code></td><td>a returning/existing conversation is opened</td><td>show the custom editor</td></tr>
+      <tr><td><code>onEmbeddedMessagingConversationClosed</code></td><td>the conversation ends</td><td>hide the custom editor</td></tr>
+      <tr><td><code>onEmbeddedMessagingWindowClosed</code></td><td>the widget window is closed</td><td>hide the custom editor</td></tr>
+    </table>
+  </section>
+
+  <!-- ============================= LIFECYCLE ============================= -->
+  <section id="lifecycle">
     <h2>End-to-end lifecycle</h2>
     <div class="flow">
-      <span class="step">Load page (<code>?org</code>)</span><span class="arrow">→</span>
-      <span class="step">bootstrap.min.js</span><span class="arrow">→</span>
+      <span class="step">Load page (<code>?org&amp;lang</code>)</span><span class="arrow">→</span>
+      <span class="step">inject bootstrap.min.js</span><span class="arrow">→</span>
+      <span class="step">init() </span><span class="arrow">→</span>
       <span class="step">ButtonCreated → launchChat()</span><span class="arrow">→</span>
-      <span class="step">Ready → observe + size</span>
+      <span class="step">Ready → hidden fields + observe/size</span>
     </div>
     <div class="flow">
       <span class="step">Prechat form (editor hidden, no clip)</span><span class="arrow">→</span>
       <span class="step"><b>Start Conversation</b></span><span class="arrow">→</span>
       <span class="step">ConversationStarted → show editor + clip native input</span><span class="arrow">→</span>
       <span class="step">Chat via custom editor</span><span class="arrow">→</span>
+      <span class="step">Post-chat survey (in-frame)</span><span class="arrow">→</span>
       <span class="step">Quit / ✕ → clearSession → index.html</span>
     </div>
   </section>
 
-  <section>
+  <!-- ============================= §5 ENVIRONMENTS ============================= -->
+  <section id="s5">
+    <h2><span class="n">5</span>Environment switching &amp; home-page launchers</h2>
+    <div class="grid">
+      <div class="box">
+        <h3>Org parameter</h3>
+        <p class="mini"><code>chat-fullscreen.html?org=staging|agentuat</code> selects the deployment (see <a href="#config">Config</a> for the full <code>ORGS</code> map).</p>
+        <pre>const cfg = ORGS[params.get('org')] || ORGS.staging;</pre>
+      </div>
+      <div class="box">
+        <h3>Launchers on index.html</h3>
+        <p class="mini">Two floating anchor buttons navigate here (the cross-origin bubble can’t be click-intercepted, so simple links replace embedded widgets).</p>
+        <pre>&lt;a title="Chat with Iris (Staging)"
+   href="chat-fullscreen.html?org=staging&amp;lang=en_US"&gt;💬&lt;/a&gt;  <span class="c">// blue, bottom-right</span>
+&lt;a title="Chat with Iris (UAT)"
+   href="chat-fullscreen.html?org=agentuat&amp;lang=en_US"&gt;💬&lt;/a&gt; <span class="c">// green, bottom-left</span></pre>
+      </div>
+    </div>
+    <div class="callout"><b>index.html has two gates before the launchers are usable</b> (important for manual QA &amp; automation):
+      <br>1. A cosmetic client-side <b>auth gate</b> (<code>#authForm</code>, user <code>sfdc</code> / pass <code>admin123</code> — visible in <code>script.js</code>, not real security). Until passed, everything except the gate is <code>display:none</code>, so the launchers are hidden.
+      <br>2. A <b>country modal</b> (<code>#countryModal</code>, <code>.country-tile[data-country=…]</code>) that pops up on first visit until a country is chosen (stored in <code>localStorage</code>).</div>
+  </section>
+
+  <!-- ============================= TESTING ============================= -->
+  <section id="testing">
+    <h2>Local testing &amp; automation</h2>
+    <p class="sub">How to drive this page end-to-end (e.g. Playwright), and the two non-obvious things that will bite you.</p>
+    <h3>Debug the widget’s internals</h3>
+    <p>Append <code>?debug=1</code> and open the console. <code>dumpShadow()</code> walks the widget’s shadow roots and prints class/data-id/tag for inputs &amp; buttons; the same text is stored at <span class="kbd">window.__amaShadowDump</span>. Use it to find current selectors when a Salesforce release renames things.</p>
+    <h3>Two automation gotchas</h3>
+    <ol>
+      <li><b>Cross-origin bootstrap is blocked in headless Chromium.</b> <code>bootstrap.min.js</code> is loaded from <code>…my.site.com</code> and gets blocked by Chrome’s Private Network Access / CORS policy in automation. Launch Chromium with:
+        <pre>--disable-web-security
+--disable-features=BlockInsecurePrivateNetworkRequests,PrivateNetworkAccessSendPreflights,
+                   PrivateNetworkAccessRespectPreflightResults,IsolateOrigins,site-per-process</pre>
+        A normal user’s browser is unaffected; this is an automation-only workaround.</li>
+      <li><b>The chat UI is in a cross-origin frame.</b> Target it via the frame whose URL matches <code>site.com</code>, then use the selectors below. Playwright reaches cross-origin frames fine (unlike page JS).</li>
+    </ol>
+    <h3>Selector cheat-sheet</h3>
+    <table>
+      <tr><th>Step</th><th>Where</th><th>Selector / signal</th></tr>
+      <tr><td>Auth gate</td><td>index.html (host)</td><td><code>#authUser</code>=sfdc, <code>#authPass</code>=admin123, submit <code>#authForm button</code></td></tr>
+      <tr><td>Country modal</td><td>index.html (host)</td><td><code>.country-tile[data-country="usa"]</code></td></tr>
+      <tr><td>Open UAT chat</td><td>index.html (host)</td><td><code>a[title="Chat with Iris (UAT)"]</code></td></tr>
+      <tr><td>Messaging iframe</td><td>host</td><td><code>#embeddedMessagingFrame</code>; frame URL matches <code>site.com</code></td></tr>
+      <tr><td>Prechat</td><td>in iframe</td><td><code>input[name="_firstName|_lastName|_email"]</code>, button “Start Conversation”</td></tr>
+      <tr><td>Editor ready</td><td>host</td><td><code>.ama-bottom:not(.ama-hidden)</code> becomes visible</td></tr>
+      <tr><td>Send a message</td><td>host</td><td>fill <code>#amaInput</code>, click <code>#amaSend</code> (or press Enter, or click a <code>.ama-chip</code>)</td></tr>
+      <tr><td>Agent replied</td><td>in iframe</td><td>count of agent timestamps <code>"Iris ·"</code> increases; user messages show <code>"Sent ·"</code></td></tr>
+      <tr><td>Survey shown</td><td>in iframe</td><td>transcript contains <code>"Quick Feedback"</code> / <code>"Submit Feedback"</code></td></tr>
+      <tr><td>Quit</td><td>host</td><td><code>#amaQuit</code> → navigates to <code>index.html</code></td></tr>
+    </table>
+    <p class="mini">A recorded reference walkthrough (home → auth → UAT → prechat → welcome → “schedule for today” → reply → “thanks” → survey → Quit) lives in <code>demo/</code> as <code>.gif</code>/<code>.mp4</code>/<code>.webm</code> with its own README.</p>
+  </section>
+
+  <!-- ============================= TROUBLESHOOTING ============================= -->
+  <section id="trouble">
+    <h2>Troubleshooting</h2>
+    <table>
+      <tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr>
+      <tr><td>Iframe never appears; console CORS/“local address space” error on <code>bootstrap.min.js</code></td><td>Private Network Access / CORS block (usually only in automation)</td><td>launch Chromium with the flags in <a href="#testing">Testing</a>; in a real browser, confirm the sandbox site is reachable</td></tr>
+      <tr><td>Widget loads but is tiny / collapsed</td><td>iframe had no explicit height</td><td>ensure <code>sizeContainer()</code> sets an explicit <code>height</code> (§1)</td></tr>
+      <tr><td>Chat never launches</td><td><code>launchChat()</code> called on the wrong event</td><td>call it on <code>onEmbeddedMessagingButtonCreated</code> only (§Boot)</td></tr>
+      <tr><td>“Start Conversation” button is hidden/clipped</td><td>clip applied during prechat</td><td>clip must be conditional on conversation phase (§3)</td></tr>
+      <tr><td>Custom input does nothing</td><td><code>utilAPI.sendTextMessage</code> missing in this release</td><td>check console warning; consider same-origin/headless (§Limits)</td></tr>
+      <tr><td>Editor bar doesn’t show after starting chat</td><td>missed <code>ConversationStarted/Opened</code></td><td>verify both listeners are attached (§2)</td></tr>
+      <tr><td>“no matches found for one or more requested services” in console</td><td>benign SCRT2 service-probe noise during boot</td><td>ignore if the conversation still starts</td></tr>
+      <tr><td>Styling reverts after a moment</td><td>widget re-rendered after our one-off sizing</td><td>the MutationObserver should re-apply; confirm it’s observing <code>document.body</code></td></tr>
+    </table>
+  </section>
+
+  <!-- ============================= LIMITS ============================= -->
+  <section id="limits">
     <h2>Constraints &amp; known limits</h2>
     <table>
       <tr><th>Item</th><th>Status</th><th>Note</th></tr>
@@ -208,22 +422,46 @@ const cfg = ORGS[params.get('org')] || ORGS.staging;</pre>
       <tr><td>Quit / close session</td><td><span class="tag t-ok">works</span></td><td>documented <code>clearSession</code> + <code>removeAllComponents</code></td></tr>
       <tr><td>Hide native input</td><td><span class="tag t-warn">via clip</span></td><td>cross-origin: cannot hide inside the frame; clipped from host, conversation-phase only</td></tr>
       <tr><td>Custom input → send</td><td><span class="tag t-warn">needs verify</span></td><td><code>sendTextMessage</code> under-documented at host level; verify per release</td></tr>
+      <tr><td>Style / prefill / submit the survey</td><td><span class="tag t-bad">blocked</span></td><td>rendered inside the cross-origin frame by the Agentforce flow</td></tr>
       <tr><td>Custom UI inside the chat (input CLT)</td><td><span class="tag t-bad">blocked</span></td><td>W-22250928 / W-22569006 — input CLTs render as plain text over ECv2 for script agents</td></tr>
     </table>
-    <div class="callout ok"><b>If a fully custom input is required:</b> host this page on the <b>same <code>…my.site.com</code> domain</b> as the widget (same-origin unlocks reaching into the frame), or go <b>headless</b> (custom UI + conversation/Agent APIs).</div>
+    <div class="callout ok"><b>If a fully custom input is required:</b> host this page on the <b>same <code>…my.site.com</code> domain</b> as the widget (same-origin unlocks reaching into the frame), or go <b>headless</b> (custom UI + Messaging/Agent APIs).</div>
   </section>
 
-  <section>
+  <!-- ============================= GLOSSARY ============================= -->
+  <section id="glossary">
+    <h2>Glossary</h2>
+    <dl class="gloss">
+      <dt>MIAW</dt><dd>Messaging for In-App &amp; Web — Salesforce’s embedded messaging channel.</dd>
+      <dt>ECv2 / Enhanced Web Chat</dt><dd>The v2 embedded messaging deployment; renders inside a cross-origin iframe and exposes the <code>embeddedservice_bootstrap</code> SDK.</dd>
+      <dt>Bootstrap SDK</dt><dd><code>window.embeddedservice_bootstrap</code> — the object exposed by <code>bootstrap.min.js</code>; our only bridge into the widget (<code>settings</code>, <code>init()</code>, <code>utilAPI</code>, <code>prechatAPI</code>, <code>userVerificationAPI</code>).</dd>
+      <dt>Deployment</dt><dd>An Embedded Service Deployment in Setup — defines the widget, its prechat form, and which agent/flow answers. Identified by <code>deploymentName</code>.</dd>
+      <dt>SCRT2</dt><dd>Salesforce real-time messaging endpoint (<code>…my.salesforce-scrt.com</code>) used for the live transport; passed to <code>init()</code> as <code>scrt2URL</code>.</dd>
+      <dt>Prechat</dt><dd>The form shown before a conversation starts (name/email here). Fields are configured on the deployment, server-side.</dd>
+      <dt>Iris</dt><dd>The Agentforce agent that answers in these deployments.</dd>
+      <dt>Clip / <code>clip-path</code></dt><dd>CSS technique used to visually crop the bottom strip (native input) off the iframe element from the host page.</dd>
+    </dl>
+  </section>
+
+  <!-- ============================= FILES ============================= -->
+  <section id="files">
     <h2>Files</h2>
     <table>
       <tr><th>File</th><th>Role</th></tr>
-      <tr><td><code>chat-fullscreen.html</code></td><td>Full-window MIAW wrapper: resize, editor, quit, clip, org switch, lifecycle</td></tr>
-      <tr><td><code>index.html</code></td><td>Home page + “Ask Iris” nav tab + two launcher buttons</td></tr>
+      <tr><td><code>chat-fullscreen.html</code></td><td>Full-window MIAW wrapper: resize, editor, quit, clip, org switch, lifecycle (the subject of this doc)</td></tr>
+      <tr><td><code>chat-fullscreen-design.html</code></td><td>This design document</td></tr>
+      <tr><td><code>index.html</code></td><td>Home page + auth gate + country modal + “Ask Iris” nav tab + two launcher buttons</td></tr>
+      <tr><td><code>script.js</code></td><td>Home-page behaviour: the (cosmetic) auth gate, country modal, nav</td></tr>
+      <tr><td><code>i18n.js</code> / <code>styles.css</code></td><td>Home-page localisation strings and styling (not used by the chat wrapper)</td></tr>
       <tr><td><code>embedded-chat.html</code></td><td>Original docked-widget embed (per-org), still available</td></tr>
+      <tr><td><code>demo/</code></td><td>Recorded end-to-end walkthrough of the UAT chat (gif/mp4/webm + README)</td></tr>
     </table>
   </section>
 
 </div>
-<footer>Design reference · dummyFifa2026 · MIAW (Agentforce Iris) full-window wrapper</footer>
+<footer>
+  Design reference · dummyFifa2026 · MIAW (Agentforce Iris) full-window wrapper<br>
+  <span class="mini">Keep this doc in sync with <code>chat-fullscreen.html</code>. If a Salesforce release renames selectors or events, update the Config, Events, Prechat, and Testing sections. Last reviewed: 2026-07-15.</span>
+</footer>
 </body>
 </html>

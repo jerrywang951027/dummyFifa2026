@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Narrated Demo Recorder — Architecture &amp; Flow</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a30; --panel2:#0f1730; --ink:#e8edf7; --muted:#9fb0cf;
+    --line:#2a3860; --accent:#6c8cff; --accent2:#39d3a3; --accent3:#ffb454; --accent4:#ff6b6b;
+    --skill:#6c8cff; --local:#39d3a3; --glue:#ffb454; --pi:#c58bff; --radius:14px;
+    --mono:'SF Mono',ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#1a2547 0%,var(--bg) 55%);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 80px}
+  header.hero{margin-bottom:36px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.02)}
+  h1{font-size:38px;line-height:1.1;margin:16px 0 10px;font-weight:800;letter-spacing:-.02em}
+  h1 span{background:linear-gradient(92deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);max-width:760px;font-size:16px}
+  h2{font-size:22px;margin:52px 0 6px;font-weight:750;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+  h2 .n{font-size:13px;color:var(--bg);background:linear-gradient(92deg,var(--accent),var(--accent2));width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-weight:800}
+  .lead{color:var(--muted);margin:2px 0 22px;max-width:820px}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 20px 50px -30px rgba(0,0,0,.8)}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin:0 0 20px;font-size:13.5px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:12px;height:12px;border-radius:4px;display:inline-block}
+  .d-skill{background:var(--skill)} .d-local{background:var(--local)} .d-glue{background:var(--glue)} .d-pi{background:var(--pi)}
+  svg{width:100%;height:auto;display:block}
+  .grid{display:grid;gap:16px}
+  @media(min-width:820px){.grid.cols-2{grid-template-columns:1fr 1fr}}
+  table{width:100%;border-collapse:collapse;font-size:14px;overflow:hidden;border-radius:12px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,255,255,.02)}
+  td code,code{font-family:var(--mono);font-size:12.5px;background:rgba(108,140,255,.12);color:#bcd0ff;padding:2px 6px;border-radius:6px}
+  .pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .p-skill{background:rgba(108,140,255,.16);color:#a9bcff;border:1px solid rgba(108,140,255,.35)}
+  .p-local{background:rgba(57,211,163,.14);color:#7fe8c8;border:1px solid rgba(57,211,163,.32)}
+  .p-glue{background:rgba(255,180,84,.14);color:#ffcf94;border:1px solid rgba(255,180,84,.32)}
+  .p-pi{background:rgba(197,139,255,.14);color:#dcbcff;border:1px solid rgba(197,139,255,.32)}
+  .note{margin-top:14px;font-size:13.5px;color:var(--muted);border-left:3px solid var(--accent2);padding:6px 0 6px 14px;background:linear-gradient(90deg,rgba(57,211,163,.06),transparent)}
+  footer{margin-top:60px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:18px}
+  .kbd{font-family:var(--mono);font-size:12px;color:#bcd0ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow">◆ Design Doc · FIFA 2026 UAT Chat Demo</span>
+    <h1>Narrated Browser-Demo Recorder<br><span>Architecture &amp; Flow</span></h1>
+    <p class="sub">How a scripted browser walkthrough of the Iris (UAT) chat is turned into an MP4 with <b>synced injected narration</b> — combining installed agent skills (patterns) with local, offline tooling (execution), glued by three custom scripts using an <b>audio-led</b> timing model.</p>
+  </header>
+
+  <!-- ============ 1. COMPONENT ARCHITECTURE ============ -->
+  <h2><span class="n">1</span> Component Architecture</h2>
+  <p class="lead">Four layers. Agent skills supply the <em>patterns</em>; local applications do the <em>work</em>; custom scripts are the <em>glue</em>; SF&nbsp;Pi tooling supports the loop.</p>
+
+  <div class="card">
+    <div class="legend">
+      <span><i class="dot d-skill"></i> Agent skills (patterns)</span>
+      <span><i class="dot d-local"></i> Local apps / CLIs (execution)</span>
+      <span><i class="dot d-glue"></i> Custom scripts (glue)</span>
+      <span><i class="dot d-pi"></i> SF Pi tooling (support)</span>
+    </div>
+
+    <svg viewBox="0 0 1080 560" role="img" aria-label="Component architecture diagram">
+      <defs>
+        <linearGradient id="gskill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#233062"/><stop offset="1" stop-color="#1a2450"/></linearGradient>
+        <linearGradient id="glocal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14352c"/><stop offset="1" stop-color="#0f2a23"/></linearGradient>
+        <linearGradient id="gglue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2f16"/><stop offset="1" stop-color="#2b2410"/></linearGradient>
+        <linearGradient id="gpi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e2352"/><stop offset="1" stop-color="#241a40"/></linearGradient>
+        <style>
+          .lbl{fill:#e8edf7;font:600 14px var(--sans,sans-serif)}
+          .sm{fill:#9fb0cf;font:400 11.5px var(--sans,sans-serif)}
+          .hd{font:800 12px var(--sans,sans-serif);letter-spacing:.12em}
+          .box{rx:12;stroke-width:1.5}
+        </style>
+      </defs>
+
+      <!-- Layer 1: agent skills -->
+      <rect x="20" y="20" width="1040" height="118" rx="14" fill="url(#gskill)" stroke="#3a4a86"/>
+      <text x="40" y="46" class="hd" fill="#a9bcff">INSTALLED AGENT SKILLS · digitalsamba/claude-code-video-toolkit</text>
+      <!-- skill boxes -->
+      <g>
+        <rect x="40" y="60" width="235" height="62" rx="10" fill="#1b2450" stroke="#5570c8"/>
+        <text x="56" y="86" class="lbl">playwright-recording</text><text x="56" y="106" class="sm">browser-script → video pattern</text>
+        <rect x="292" y="60" width="200" height="62" rx="10" fill="#1b2450" stroke="#5570c8"/>
+        <text x="308" y="86" class="lbl">ffmpeg</text><text x="308" y="106" class="sm">audio↔video mux patterns</text>
+        <rect x="508" y="60" width="235" height="62" rx="10" fill="#1b2450" stroke="#3a4a86" stroke-dasharray="5 4"/>
+        <text x="524" y="86" class="lbl" style="fill:#8ea3d8">elevenlabs <tspan class="sm">(fallback)</tspan></text><text x="524" y="106" class="sm">TTS-per-step (not used)</text>
+        <rect x="760" y="60" width="280" height="62" rx="10" fill="#1b2450" stroke="#3a4a86" stroke-dasharray="5 4"/>
+        <text x="776" y="86" class="lbl" style="fill:#8ea3d8">remotion <tspan class="sm">(optional)</tspan></text><text x="776" y="106" class="sm">captions / overlays (not used)</text>
+      </g>
+
+      <!-- Layer 2: custom scripts (glue) -->
+      <rect x="20" y="160" width="1040" height="150" rx="14" fill="url(#gglue)" stroke="#7a6326"/>
+      <text x="40" y="186" class="hd" fill="#ffcf94">CUSTOM SCRIPTS (the glue) · /tmp/pw-demo → recordings/</text>
+      <g>
+        <rect x="40" y="200" width="330" height="92" rx="10" fill="#2b2410" stroke="#b7902f"/>
+        <text x="56" y="226" class="lbl">record_narrated.js</text>
+        <text x="56" y="247" class="sm">• drives Playwright flow + records video</text>
+        <text x="56" y="264" class="sm">• pre-gens clips, measures dur → holds screens</text>
+        <text x="56" y="281" class="sm">• injects cursor / callout / pulse / ripple FX</text>
+
+        <rect x="388" y="200" width="300" height="92" rx="10" fill="#2b2410" stroke="#b7902f"/>
+        <text x="404" y="226" class="lbl">build_audio.sh</text>
+        <text x="404" y="247" class="sm">• reads narration text from timeline</text>
+        <text x="404" y="264" class="sm">• one TTS clip per beat via <tspan style="fill:#ffd9a0">say</tspan></text>
+        <text x="404" y="281" class="sm">• AIFF → 48k stereo WAV</text>
+
+        <rect x="706" y="200" width="334" height="92" rx="10" fill="#2b2410" stroke="#b7902f"/>
+        <text x="722" y="226" class="lbl">mux.py</text>
+        <text x="722" y="247" class="sm">• anchor clips = max(event, prev_end)</text>
+        <text x="722" y="264" class="sm">• adelay + amix onto timeline</text>
+        <text x="722" y="281" class="sm">• freeze-pad tail → encode MP4</text>
+      </g>
+
+      <!-- Layer 3: local tools -->
+      <rect x="20" y="332" width="1040" height="118" rx="14" fill="url(#glocal)" stroke="#2c6b57"/>
+      <text x="40" y="358" class="hd" fill="#7fe8c8">LOCAL INSTALLED APPLICATIONS (offline · no API keys)</text>
+      <g>
+        <rect x="40" y="372" width="300" height="62" rx="10" fill="#0f2a23" stroke="#39d3a3"/>
+        <text x="56" y="398" class="lbl">Node.js + Playwright</text><text x="56" y="418" class="sm">Chromium automation + video capture</text>
+        <rect x="358" y="372" width="300" height="62" rx="10" fill="#0f2a23" stroke="#39d3a3"/>
+        <text x="374" y="398" class="lbl">macOS&nbsp;<tspan style="fill:#7fe8c8">say</tspan> (TTS)</text><text x="374" y="418" class="sm">local text-to-speech (Samantha)</text>
+        <rect x="676" y="372" width="364" height="62" rx="10" fill="#0f2a23" stroke="#39d3a3"/>
+        <text x="692" y="398" class="lbl">ffmpeg / ffprobe</text><text x="692" y="418" class="sm">convert · measure · delay+mix · encode H.264/AAC</text>
+      </g>
+
+      <!-- Layer 4: SF Pi -->
+      <rect x="20" y="472" width="1040" height="68" rx="14" fill="url(#gpi)" stroke="#6b4fa0"/>
+      <text x="40" y="498" class="hd" fill="#dcbcff">SF PI TOOLING (support)</text>
+      <g>
+        <rect x="40" y="506" width="300" height="24" rx="8" fill="#241a40" stroke="#8b6fc0"/><text x="150" y="522" class="sm" text-anchor="middle" style="fill:#dcbcff">pi session reader (.jsonl)</text>
+        <rect x="358" y="506" width="300" height="24" rx="8" fill="#241a40" stroke="#8b6fc0"/><text x="508" y="522" class="sm" text-anchor="middle" style="fill:#dcbcff">sf-code-analyzer (ESLint)</text>
+        <rect x="676" y="506" width="364" height="24" rx="8" fill="#241a40" stroke="#8b6fc0"/><text x="858" y="522" class="sm" text-anchor="middle" style="fill:#dcbcff">read · bash · edit · write · frame verify</text>
+      </g>
+
+      <!-- arrows skills->glue -->
+      <g stroke="#5570c8" stroke-width="1.6" fill="none" opacity=".7">
+        <path d="M157 122 L157 158" marker-end="url(#ar)"/><path d="M392 122 L392 158" marker-end="url(#ar)"/>
+      </g>
+      <!-- arrows glue<->local -->
+      <g stroke="#39d3a3" stroke-width="1.6" fill="none" opacity=".8">
+        <path d="M205 292 L190 330" marker-end="url(#arg)"/>
+        <path d="M538 292 L508 330" marker-end="url(#arg)"/>
+        <path d="M860 292 L860 330" marker-end="url(#arg)"/>
+      </g>
+      <defs>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="#5570c8"/></marker>
+        <marker id="arg" markerWidth="9" markerHeight="9" refX="4.5" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="#39d3a3"/></marker>
+      </defs>
+    </svg>
+    <p class="note">Agent skills are <b>guidance only</b> — they shaped the architecture but execute nothing. All actual work is done by local, offline tools driven by the custom scripts.</p>
+  </div>
+
+  <!-- ============ 2. PIPELINE FLOWCHART ============ -->
+  <h2><span class="n">2</span> End-to-End Pipeline Flowchart</h2>
+  <p class="lead">From the requirement (captured in a prior pi session) to the final MP4. Note the two feedback loops that verify quality.</p>
+
+  <div class="card">
+    <svg viewBox="0 0 1080 470" role="img" aria-label="Pipeline flowchart">
+      <defs>
+        <marker id="a" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#6c8cff"/></marker>
+        <marker id="ag" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#39d3a3"/></marker>
+        <marker id="ao" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#ffb454"/></marker>
+        <style>
+          .ttl{fill:#e8edf7;font:700 14px var(--sans,sans-serif)}
+          .cap{fill:#9fb0cf;font:400 11px var(--sans,sans-serif)}
+          .tag{font:800 9.5px var(--sans,sans-serif);letter-spacing:.08em}
+          .flow{fill:none;stroke:#6c8cff;stroke-width:2}
+        </style>
+      </defs>
+
+      <!-- node helper look -->
+      <!-- 1 requirement -->
+      <rect x="24" y="40" width="176" height="76" rx="12" fill="#241a40" stroke="#8b6fc0"/>
+      <text x="40" y="66" class="tag" fill="#dcbcff">SOURCE</text>
+      <text x="40" y="86" class="ttl">Requirement</text>
+      <text x="40" y="104" class="cap">prior pi session .jsonl</text>
+
+      <!-- 2 record -->
+      <rect x="232" y="30" width="200" height="96" rx="12" fill="#2b2410" stroke="#b7902f"/>
+      <text x="248" y="54" class="tag" fill="#ffcf94">record_narrated.js</text>
+      <text x="248" y="75" class="ttl">Drive + Record</text>
+      <text x="248" y="93" class="cap">Playwright · Chromium</text>
+      <text x="248" y="109" class="cap">+ inject cursor/FX</text>
+
+      <!-- 2 outputs -->
+      <rect x="470" y="16" width="180" height="46" rx="10" fill="#0f2a23" stroke="#39d3a3"/>
+      <text x="486" y="38" class="ttl" style="font-size:13px">raw .webm</text><text x="486" y="54" class="cap">Playwright capture</text>
+      <rect x="470" y="80" width="180" height="46" rx="10" fill="#0f2a23" stroke="#39d3a3"/>
+      <text x="486" y="102" class="ttl" style="font-size:13px">timeline.json</text><text x="486" y="118" class="cap">beat id · time · text</text>
+
+      <!-- 3 pre-gen / say -->
+      <rect x="470" y="168" width="180" height="86" rx="12" fill="#0f2a23" stroke="#39d3a3"/>
+      <text x="486" y="192" class="tag" fill="#7fe8c8">macOS say + ffprobe</text>
+      <text x="486" y="212" class="ttl">TTS clips + durations</text>
+      <text x="486" y="230" class="cap">one WAV per beat</text>
+      <text x="486" y="246" class="cap">duration → in-video holds</text>
+
+      <!-- 4 build_audio -->
+      <rect x="232" y="176" width="200" height="70" rx="12" fill="#2b2410" stroke="#b7902f"/>
+      <text x="248" y="200" class="tag" fill="#ffcf94">build_audio.sh</text>
+      <text x="248" y="220" class="ttl">Render narration</text>
+      <text x="248" y="238" class="cap">say → AIFF → 48k WAV</text>
+
+      <!-- 5 mux -->
+      <rect x="700" y="168" width="200" height="86" rx="12" fill="#2b2410" stroke="#b7902f"/>
+      <text x="716" y="192" class="tag" fill="#ffcf94">mux.py + ffmpeg</text>
+      <text x="716" y="212" class="ttl">Align + Mux</text>
+      <text x="716" y="230" class="cap">anchor · adelay · amix</text>
+      <text x="716" y="246" class="cap">freeze-pad · encode</text>
+
+      <!-- 6 output -->
+      <rect x="700" y="300" width="200" height="86" rx="12" fill="#122045" stroke="#6c8cff"/>
+      <text x="716" y="324" class="tag" fill="#a9bcff">DELIVERABLE</text>
+      <text x="716" y="345" class="ttl">fifa26-uat-chat</text>
+      <text x="716" y="362" class="ttl">-narrated.mp4</text>
+      <text x="716" y="379" class="cap">H.264 video + AAC audio</text>
+
+      <!-- flows -->
+      <path class="flow" d="M200 78 L228 78" marker-end="url(#a)"/>
+      <path class="flow" d="M432 60 L466 40" marker-end="url(#ag)" stroke="#39d3a3"/>
+      <path class="flow" d="M432 96 L466 100" marker-end="url(#ag)" stroke="#39d3a3"/>
+      <!-- timeline text -> build_audio -->
+      <path class="flow" d="M470 103 C 360 130, 340 150, 332 174" marker-end="url(#ao)" stroke="#ffb454"/>
+      <!-- build_audio -> clips -->
+      <path class="flow" d="M432 211 L466 211" marker-end="url(#ag)" stroke="#39d3a3"/>
+      <!-- clips -> mux -->
+      <path class="flow" d="M650 211 L698 211" marker-end="url(#a)"/>
+      <!-- webm -> mux -->
+      <path class="flow" d="M650 39 C 760 60, 800 110, 800 166" marker-end="url(#a)"/>
+      <!-- mux -> output -->
+      <path class="flow" d="M800 254 L800 298" marker-end="url(#a)"/>
+
+      <!-- feedback loop 1: durations back into record (audio-led) -->
+      <path d="M560 168 C 560 150, 560 132, 470 128 C 300 122, 320 250, 300 246" fill="none" stroke="#39d3a3" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#ag)" opacity=".85"/>
+      <rect x="300" y="256" width="270" height="22" rx="7" fill="rgba(57,211,163,.1)" stroke="#39d3a3"/>
+      <text x="435" y="271" class="cap" text-anchor="middle" style="fill:#7fe8c8">loop A · clip durations gate the in-video holds (audio-led sync)</text>
+
+      <!-- feedback loop 2: frame verify + eslint -->
+      <rect x="24" y="330" width="640" height="120" rx="12" fill="rgba(197,139,255,.06)" stroke="#6b4fa0" stroke-dasharray="6 5"/>
+      <text x="44" y="356" class="tag" fill="#dcbcff">loop B · VERIFY (SF Pi)</text>
+      <text x="44" y="380" class="cap">• ffmpeg sample frames → visually confirm survey / cursor / home-return</text>
+      <text x="44" y="400" class="cap">• sf-code-analyzer ESLint auto-scan on record_narrated.js (kept clean)</text>
+      <text x="44" y="420" class="cap">• re-run record → build → mux on each requested change</text>
+      <text x="44" y="440" class="cap">Iterated: sync, survey visibility, quit FX, full-page pacing, voice, closing line</text>
+      <path d="M700 343 C 690 470, 300 470, 190 452" fill="none" stroke="#c58bff" stroke-width="1.6" stroke-dasharray="6 5" marker-end="url(#a)" opacity=".7" style="stroke:#c58bff"/>
+    </svg>
+  </div>
+
+  <!-- ============ 3. AUDIO-LED SYNC ============ -->
+  <h2><span class="n">3</span> The Sync Model — “Audio-led” Timing</h2>
+  <p class="lead">The core trick that keeps narration matched to on-screen actions: the video waits for the words, not the other way around.</p>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <svg viewBox="0 0 520 260" role="img" aria-label="Audio-led timing diagram">
+        <defs>
+          <style>.t{fill:#e8edf7;font:600 12px var(--sans,sans-serif)} .c{fill:#9fb0cf;font:400 10.5px var(--sans,sans-serif)}</style>
+        </defs>
+        <text x="20" y="26" class="t">1 · Pre-generate clip → measure duration</text>
+        <rect x="20" y="36" width="150" height="26" rx="6" fill="#0f2a23" stroke="#39d3a3"/>
+        <text x="30" y="53" class="c" style="fill:#7fe8c8">say "…" → 6.5s</text>
+
+        <text x="20" y="92" class="t">2 · Video HOLDS the screen for 6.5s</text>
+        <rect x="20" y="102" width="320" height="26" rx="6" fill="#122045" stroke="#6c8cff"/>
+        <text x="30" y="119" class="c" style="fill:#a9bcff">home page shown · cursor hovering widget</text>
+
+        <text x="20" y="158" class="t">3 · Narration finishes → THEN click</text>
+        <rect x="20" y="168" width="200" height="26" rx="6" fill="#2b2410" stroke="#b7902f"/>
+        <text x="30" y="185" class="c" style="fill:#ffcf94">navigate → full-page mode</text>
+
+        <text x="20" y="224" class="t" style="fill:#7fe8c8">Result: no “audio ahead of UI”, no blank gaps</text>
+        <rect x="20" y="234" width="480" height="2" fill="#2a3860"/>
+      </svg>
+      <p class="note" style="border-color:var(--accent)">Clips are anchored at <code>max(event_time, prev_clip_end)</code> so they never overlap; the tail is freeze-padded so the closing line always finishes on screen.</p>
+    </div>
+    <div class="card">
+      <table>
+        <tr><th>Problem observed</th><th>Fix in the model</th></tr>
+        <tr><td>Audio ran ahead of the UI</td><td>Hold each opening screen for its clip duration</td></tr>
+        <tr><td>Reached full-page before narration done</td><td>Speak the “click” line fully, <em>then</em> navigate</td></tr>
+        <tr><td>Blank pause on full-page load</td><td>Move <code>prechat</code> line to play <em>during</em> load</td></tr>
+        <tr><td>Survey not visible</td><td>Scroll <code>Submit Feedback</code> into view</td></tr>
+        <tr><td>Cursor/tooltip not recorded</td><td>Inject visible cursor + callout + pulse</td></tr>
+        <tr><td>Closing line cut off</td><td>Freeze-pad video tail to fit audio</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ 4. COMPONENT REGISTER ============ -->
+  <h2><span class="n">4</span> Component Register</h2>
+  <div class="card">
+    <table>
+      <tr><th>Component</th><th>Type</th><th>Role</th></tr>
+      <tr><td>playwright-recording · ffmpeg</td><td><span class="pill p-skill">agent skill</span></td><td>Patterns for record-to-video and audio muxing</td></tr>
+      <tr><td>elevenlabs · remotion</td><td><span class="pill p-skill">agent skill</span></td><td>Available fallbacks (TTS / overlays) — not used</td></tr>
+      <tr><td>Node.js + Playwright (Chromium)</td><td><span class="pill p-local">local app</span></td><td>Runs the browser flow, records the raw <code>.webm</code></td></tr>
+      <tr><td>macOS <code>say</code></td><td><span class="pill p-local">local app</span></td><td>Offline TTS — one narration clip per beat</td></tr>
+      <tr><td>ffmpeg / ffprobe</td><td><span class="pill p-local">local app</span></td><td>Convert, measure, delay+mix, freeze-pad, encode</td></tr>
+      <tr><td><code>record_narrated.js</code></td><td><span class="pill p-glue">custom script</span></td><td>Flow + audio-led holds + injected cursor/FX + timeline</td></tr>
+      <tr><td><code>build_audio.sh</code></td><td><span class="pill p-glue">custom script</span></td><td>Regenerates TTS clips from the timeline text</td></tr>
+      <tr><td><code>mux.py</code></td><td><span class="pill p-glue">custom script</span></td><td>Anchors, mixes, pads and encodes the final MP4</td></tr>
+      <tr><td>pi session reader</td><td><span class="pill p-pi">sf pi</span></td><td>Recovered the requirement from a prior session</td></tr>
+      <tr><td>sf-code-analyzer</td><td><span class="pill p-pi">sf pi</span></td><td>Deferred ESLint scans on the recorder script</td></tr>
+    </table>
+  </div>
+
+  <footer>
+    Deliverable: <span class="kbd">recordings/fifa26-uat-chat-narrated.mp4</span> · pipeline: <span class="kbd">record_narrated.js → build_audio.sh → mux.py</span> · all execution local &amp; offline (no cloud / API keys).
+  </footer>
+
+</div>
+</body>
+</html>

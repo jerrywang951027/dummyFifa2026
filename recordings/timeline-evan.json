@@ -1,0 +1,87 @@
+{
+  "video": "/tmp/pw-demo/video-narrated/page@76d8465f20a807473436dcfb52f0cd4d.webm",
+  "total": 123.466,
+  "viewport": {
+    "w": 1360,
+    "h": 860
+  },
+  "voice": "Evan (Enhanced)",
+  "rate": "175",
+  "marks": [
+    {
+      "id": "home",
+      "t": 0,
+      "text": "This demo runs on a third-party custom site that simulates the FIFA 2026 website, an external site to the Salesforce org."
+    },
+    {
+      "id": "purpose",
+      "t": 8.2,
+      "text": "It shows how to add a custom Quit button that lets a user cleanly end the Iris agent chat, without changing the out-of-the-box M-I-A-W component."
+    },
+    {
+      "id": "overview",
+      "t": 16.57,
+      "text": "Everything runs here on the external page. We'll open the agent in full-page mode, start a conversation, ask for today's schedule, and then quit back to this home page."
+    },
+    {
+      "id": "open-chat",
+      "t": 26.78,
+      "text": "So, on the home page, we click the chat widget to start a chat with the Iris agent in the U-A-T environment."
+    },
+    {
+      "id": "prechat",
+      "t": 33.91,
+      "text": "Iris opens in full-page mode, and the pre-chat form loads. We fill in our details and start the conversation."
+    },
+    {
+      "id": "welcome",
+      "t": 48.52,
+      "text": "Iris greets us with a personalized welcome."
+    },
+    {
+      "id": "sdk-note",
+      "t": 51.14,
+      "text": "One thing to notice: this bottom bar, the message box and the Quit button, is not part of the M-I-A-W chat window. It is a component of the custom site that talks to the Iris chat through the Salesforce Embedded Service S-D-K."
+    },
+    {
+      "id": "ask-schedule",
+      "t": 65.31,
+      "text": "We ask Iris for today's match schedule."
+    },
+    {
+      "id": "schedule-reply",
+      "t": 80.92,
+      "text": "Iris replies with the full match schedule for today."
+    },
+    {
+      "id": "thanks",
+      "t": 85.44,
+      "text": "We thank the assistant."
+    },
+    {
+      "id": "survey",
+      "t": 94.78,
+      "text": "Iris responds with a short feedback survey."
+    },
+    {
+      "id": "quit",
+      "t": 100.14,
+      "text": "Now the key step: we click the custom Quit button in the bottom bar."
+    },
+    {
+      "id": "home-return",
+      "t": 103.79,
+      "text": "The session ends and the UI switches back to the home page, with no change to the M-I-A-W component."
+    },
+    {
+      "id": "new-convo",
+      "t": 110.54,
+      "text": "Clicking the Iris U-A-T widget again immediately starts a brand-new conversation. The pre-chat form reappears."
+    },
+    {
+      "id": "closing",
+      "t": 118.12,
+      "text": "And that concludes our quick demo on how to support an easy exit from the conversation."
+    }
+  ]
+}
